@@ -3,11 +3,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Plus, X, Upload } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+
+const CATEGORIES = [
+  { value: 'men', labelKey: 'categoryMen' },
+  { value: 'women', labelKey: 'categoryWomen' },
+  { value: 'kids', labelKey: 'categoryKids' },
+  { value: 'accessories', labelKey: 'categoryAccessories' },
+];
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -117,7 +125,18 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
             <Input type="number" placeholder={t('price') + ' *'} value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
             <Input type="number" placeholder={t('discountPrice')} value={formData.discountPrice} onChange={e => setFormData({...formData, discountPrice: e.target.value})} />
           </div>
-          <Input placeholder={t('category') + ' *'} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} required />
+          <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder={t('category') + ' *'} />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              {CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {t(cat.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Textarea placeholder={t('description')} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           <Input placeholder={t('storeLocation')} value={formData.storeLocation} onChange={e => setFormData({...formData, storeLocation: e.target.value})} />
           <Input placeholder={t('phoneNumber')} value={formData.phoneNumber} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} dir="ltr" />

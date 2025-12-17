@@ -145,11 +145,11 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
               <h2 className="text-xl font-bold text-foreground mb-2">{product.name}</h2>
               <div className="flex items-center gap-3">
                 <span className="text-2xl font-bold text-primary">
-                  {product.discount_price || product.price} ر.س
+                  {product.discount_price || product.price} د.ج
                 </span>
                 {product.discount_price && (
                   <span className="text-lg text-muted-foreground line-through">
-                    {product.price} ر.س
+                    {product.price} د.ج
                   </span>
                 )}
               </div>
