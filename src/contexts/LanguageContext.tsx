@@ -92,6 +92,11 @@ export const translations: Translations = {
   customerLocation: { ar: 'موقع الزبون', en: 'Customer Location', fr: 'Emplacement du client', ber: 'ⴰⴷⵖⴰⵔ ⵏ ⵓⵎⵙⴰⵖ' },
   orderDate: { ar: 'تاريخ الطلب', en: 'Order Date', fr: 'Date de commande', ber: 'ⴰⵙⴰⴽⵓⴷ ⵏ ⵓⵣⵣⵏⵣ' },
   actions: { ar: 'الإجراءات', en: 'Actions', fr: 'Actions', ber: 'ⵜⵉⴳⴰⵡⵉⵏ' },
+  appLogo: { ar: 'شعار التطبيق', en: 'App Logo', fr: 'Logo de l\'application', ber: 'ⴰⵎⴰⵜⴰⵔ ⵏ ⵓⵙⵏⵙ' },
+  uploadLogo: { ar: 'رفع الشعار', en: 'Upload Logo', fr: 'Télécharger le logo', ber: 'ⵙⴰⵍⵉ ⴰⵎⴰⵜⴰⵔ' },
+  replaceLogo: { ar: 'استبدال الشعار', en: 'Replace Logo', fr: 'Remplacer le logo', ber: 'ⵙⵏⴼⵍ ⴰⵎⴰⵜⴰⵔ' },
+  deleteLogo: { ar: 'حذف الشعار', en: 'Delete Logo', fr: 'Supprimer le logo', ber: 'ⴽⴽⵙ ⴰⵎⴰⵜⴰⵔ' },
+  noLogoMessage: { ar: 'لا يوجد شعار مخصص. سيتم استخدام الشعار الافتراضي.', en: 'No custom logo. Default logo will be used.', fr: 'Pas de logo personnalisé. Le logo par défaut sera utilisé.', ber: 'ⵓⵔ ⵉⵍⵍⵉ ⵓⵎⴰⵜⴰⵔ. ⴰⴷ ⵉⵜⵜⵓⵙⵎⵔⵙ ⵓⵎⴰⵜⴰⵔ ⴰⵎⵣⵡⴰⵔⵓ.' },
 };
 
 interface LanguageContextType {
