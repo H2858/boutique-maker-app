@@ -4,25 +4,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/product/ProductCard';
 import ProductDetailsModal from '@/components/product/ProductDetailsModal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 
 interface ProductGridProps {
   title?: string;
+  categoryFilter?: string | null;
+  searchQuery?: string;
+  onClearFilter?: () => void;
 }
 
-const ProductGrid = ({ title }: ProductGridProps) => {
-  const { t, dir } = useLanguage();
+const ProductGrid = ({ title, categoryFilter, searchQuery, onClearFilter }: ProductGridProps) => {
+  const { t, dir, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', categoryFilter, searchQuery],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
-        .select('*, product_images(*), product_colors(*), product_sizes(*)')
-        .order('created_at', { ascending: false });
+        .select('*, product_images(*), product_colors(*), product_sizes(*)');
+      
+      if (categoryFilter) {
+        query = query.eq('category', categoryFilter);
+      }
+      
+      if (searchQuery && searchQuery.trim()) {
+        query = query.ilike('name', `%${searchQuery}%`);
+      }
+      
+      const { data, error } = await query.order('name', { ascending: true });
       if (error) throw error;
-      return data;
+      
+      // Sort alphabetically based on current language
+      return data?.sort((a, b) => {
+        return a.name.localeCompare(b.name, language === 'ar' ? 'ar' : language === 'fr' ? 'fr' : 'en');
+      });
     },
   });
 
@@ -38,17 +54,49 @@ const ProductGrid = ({ title }: ProductGridProps) => {
     return (
       <section className="px-4 py-6 text-center" dir={dir}>
         <p className="text-muted-foreground">{t('noProducts')}</p>
+        {categoryFilter && onClearFilter && (
+          <button 
+            onClick={onClearFilter}
+            className="mt-4 text-primary hover:underline"
+          >
+            {t('viewAll')}
+          </button>
+        )}
       </section>
     );
   }
 
+  const getCategoryLabel = (cat: string) => {
+    const labels: { [key: string]: string } = {
+      'men': t('categoryMen'),
+      'women': t('categoryWomen'),
+      'kids': t('categoryKids'),
+      'accessories': t('categoryAccessories'),
+    };
+    return labels[cat] || cat;
+  };
+
   return (
     <section className="px-4 py-6" dir={dir}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground">{title || t('featuredProducts')}</h2>
-        <button className="text-sm text-primary font-medium hover:underline">
-          {t('viewAll')}
-        </button>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-bold text-foreground">
+            {categoryFilter ? getCategoryLabel(categoryFilter) : (title || t('featuredProducts'))}
+          </h2>
+          {categoryFilter && onClearFilter && (
+            <button 
+              onClick={onClearFilter}
+              className="p-1 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {!categoryFilter && (
+          <button className="text-sm text-primary font-medium hover:underline">
+            {t('viewAll')}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

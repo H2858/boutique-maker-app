@@ -65,7 +65,7 @@ const AdminProducts = () => {
               )}
             </div>
             <h3 className="font-semibold text-foreground truncate">{product.name}</h3>
-            <p className="text-primary font-bold">{product.discount_price || product.price} ر.س</p>
+            <p className="text-primary font-bold">{product.discount_price || product.price} د.ج</p>
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" onClick={() => { setEditingProduct(product); setShowForm(true); }}>
                 <Pencil className="h-4 w-4" />

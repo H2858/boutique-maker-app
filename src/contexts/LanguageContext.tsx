@@ -128,6 +128,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translations[key]?.[language] || key;
   };
 
+  // Export language for components that need it
+
   const dir = language === 'ar' || language === 'ber' ? 'rtl' : 'ltr';
 
   return (
