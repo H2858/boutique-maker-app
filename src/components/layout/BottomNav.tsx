@@ -1,12 +1,6 @@
-import { Home, Grid3X3, Heart, User, ShoppingBag } from "lucide-react";
+import { Home, Grid3X3, Heart, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface NavItem {
-  icon: React.ReactNode;
-  label: string;
-  isActive?: boolean;
-  badge?: number;
-}
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BottomNavProps {
   activeTab: string;
@@ -14,12 +8,13 @@ interface BottomNavProps {
 }
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
-  const navItems: { id: string; icon: React.ElementType; label: string; badge?: number }[] = [
-    { id: "home", icon: Home, label: "الرئيسية" },
-    { id: "categories", icon: Grid3X3, label: "الأقسام" },
-    { id: "orders", icon: ShoppingBag, label: "طلباتي", badge: 2 },
-    { id: "favorites", icon: Heart, label: "المفضلة" },
-    { id: "profile", icon: User, label: "حسابي" },
+  const { t } = useLanguage();
+  
+  const navItems = [
+    { id: "home", icon: Home, label: t('home') },
+    { id: "categories", icon: Grid3X3, label: t('categories') },
+    { id: "favorites", icon: Heart, label: t('favorites') },
+    { id: "settings", icon: Settings, label: t('settings') },
   ];
 
   return (
@@ -48,11 +43,6 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                     isActive && "scale-110"
                   )} />
                 </div>
-                {item.badge && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent text-[10px] font-bold text-accent-foreground flex items-center justify-center">
-                    {item.badge}
-                  </span>
-                )}
               </div>
               <span className={cn(
                 "text-[10px] font-medium transition-all duration-200",
