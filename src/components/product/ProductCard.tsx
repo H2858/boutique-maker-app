@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { Heart, Star, ShoppingCart, Plus } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface ProductImage {
+  id: string;
+  image_url: string;
+  is_primary: boolean;
+}
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  sold: number;
-  discount?: number;
+  discount_price: number | null;
+  product_images: ProductImage[];
 }
 
 interface ProductCardProps {
@@ -20,13 +23,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
+  const { t } = useLanguage();
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddToCart = () => {
-    setIsAdding(true);
-    setTimeout(() => setIsAdding(false), 600);
-  };
+  const primaryImage = product.product_images?.find(img => img.is_primary) || product.product_images?.[0];
+  const discount = product.discount_price 
+    ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+    : 0;
 
   return (
     <div className={cn(
@@ -35,22 +38,28 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
     )}>
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-secondary">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+        {primaryImage ? (
+          <img
+            src={primaryImage.image_url}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+            No Image
+          </div>
+        )}
         
         {/* Discount Badge */}
-        {product.discount && (
+        {discount > 0 && (
           <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-bold">
-            -{product.discount}%
+            -{discount}%
           </div>
         )}
 
         {/* Favorite Button */}
         <button
-          onClick={() => setIsFavorite(!isFavorite)}
+          onClick={(e) => { e.stopPropagation(); setIsFavorite(!isFavorite); }}
           className={cn(
             "absolute top-2 left-2 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-all duration-200",
             isFavorite && "bg-accent text-accent-foreground"
@@ -61,45 +70,22 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
             isFavorite && "fill-current scale-110"
           )} />
         </button>
-
-        {/* Quick Add Button */}
-        <button
-          onClick={handleAddToCart}
-          className={cn(
-            "absolute bottom-2 right-2 w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-glow transition-all duration-200 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0",
-            isAdding && "animate-bounce-subtle bg-success"
-          )}
-        >
-          {isAdding ? (
-            <ShoppingCart className="h-4 w-4" />
-          ) : (
-            <Plus className="h-5 w-5" />
-          )}
-        </button>
       </div>
 
       {/* Content */}
-      <div className="p-3" dir="rtl">
+      <div className="p-3">
         <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-2 min-h-[40px]">
           {product.name}
         </h3>
 
-        {/* Rating & Sold */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 text-warning fill-warning" />
-            <span className="text-xs font-medium text-foreground">{product.rating}</span>
-          </div>
-          <span className="text-xs text-muted-foreground">|</span>
-          <span className="text-xs text-muted-foreground">{product.sold} مبيعات</span>
-        </div>
-
         {/* Price */}
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-primary">{product.price} ر.س</span>
-          {product.originalPrice && (
+          <span className="text-lg font-bold text-primary">
+            {product.discount_price || product.price} ر.س
+          </span>
+          {product.discount_price && (
             <span className="text-xs text-muted-foreground line-through">
-              {product.originalPrice} ر.س
+              {product.price} ر.س
             </span>
           )}
         </div>
