@@ -1,16 +1,40 @@
 import { Search } from "lucide-react";
-import logo from "@/assets/logo.png";
+import defaultLogo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { t, dir } = useLanguage();
+
+  const { data: logoSetting } = useQuery({
+    queryKey: ['app-logo-setting'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'app-logo')
+        .maybeSingle();
+      if (error) throw error;
+      return data?.value || '';
+    },
+  });
+
+  const logoUrl = logoSetting || defaultLogo;
+  const showLogo = logoSetting !== '' || !logoSetting;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-lg border-b border-border/50">
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <img src={logo} alt="Boutique Mancer" className="h-10 w-auto object-contain" />
+          {(logoSetting === undefined || logoSetting === null || logoSetting !== '') && (
+            <img 
+              src={logoSetting || defaultLogo} 
+              alt="Boutique Mancer" 
+              className="h-10 w-auto object-contain" 
+            />
+          )}
           <span className="hidden sm:block text-lg font-bold text-gradient">
             BOUTIQUE MANCER
           </span>
