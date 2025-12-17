@@ -1,44 +1,62 @@
-import { Shirt, Watch, Footprints, Gem, Sparkles, Baby, Home as HomeIcon, Smartphone } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const categories = [
-  { id: 1, name: "ملابس", icon: Shirt, color: "bg-pink-100 text-pink-600" },
-  { id: 2, name: "ساعات", icon: Watch, color: "bg-blue-100 text-blue-600" },
-  { id: 3, name: "أحذية", icon: Footprints, color: "bg-amber-100 text-amber-600" },
-  { id: 4, name: "مجوهرات", icon: Gem, color: "bg-purple-100 text-purple-600" },
-  { id: 5, name: "تجميل", icon: Sparkles, color: "bg-rose-100 text-rose-600" },
-  { id: 6, name: "أطفال", icon: Baby, color: "bg-cyan-100 text-cyan-600" },
-  { id: 7, name: "منزل", icon: HomeIcon, color: "bg-green-100 text-green-600" },
-  { id: 8, name: "إلكترونيات", icon: Smartphone, color: "bg-slate-100 text-slate-600" },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Categories = () => {
+  const { t, dir } = useLanguage();
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .order('category');
+      if (error) throw error;
+      // Get unique categories
+      const unique = [...new Set(data?.map(p => p.category))];
+      return unique;
+    },
+  });
+
+  const categoryIcons: { [key: string]: { bg: string; emoji: string } } = {
+    'ملابس': { bg: 'bg-pink-100 dark:bg-pink-900/30', emoji: '👕' },
+    'أحذية': { bg: 'bg-amber-100 dark:bg-amber-900/30', emoji: '👟' },
+    'ساعات': { bg: 'bg-blue-100 dark:bg-blue-900/30', emoji: '⌚' },
+    'مجوهرات': { bg: 'bg-purple-100 dark:bg-purple-900/30', emoji: '💎' },
+    'تجميل': { bg: 'bg-rose-100 dark:bg-rose-900/30', emoji: '✨' },
+    'إلكترونيات': { bg: 'bg-slate-100 dark:bg-slate-900/30', emoji: '📱' },
+    'منزل': { bg: 'bg-green-100 dark:bg-green-900/30', emoji: '🏠' },
+    'أطفال': { bg: 'bg-cyan-100 dark:bg-cyan-900/30', emoji: '👶' },
+  };
+
+  const getIcon = (cat: string) => categoryIcons[cat] || { bg: 'bg-secondary', emoji: '📦' };
+
+  if (!categories || categories.length === 0) return null;
+
   return (
-    <section className="px-4 py-6" dir="rtl">
+    <section className="px-4 py-6" dir={dir}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground">الأقسام</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('categories')}</h2>
         <button className="text-sm text-primary font-medium hover:underline">
-          عرض الكل
+          {t('viewAll')}
         </button>
       </div>
       
       <div className="grid grid-cols-4 gap-3">
         {categories.map((category, index) => {
-          const Icon = category.icon;
+          const icon = getIcon(category);
           return (
             <button
-              key={category.id}
+              key={category}
               className="flex flex-col items-center gap-2 group animate-fade-in-up"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className={cn(
-                "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-medium",
-                category.color
-              )}>
-                <Icon className="h-6 w-6" />
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-medium ${icon.bg}`}>
+                <span className="text-2xl">{icon.emoji}</span>
               </div>
               <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-                {category.name}
+                {category}
               </span>
             </button>
           );
