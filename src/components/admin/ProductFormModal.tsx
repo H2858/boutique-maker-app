@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Plus, X, Upload } from 'lucide-react';
+import { Loader2, Plus, X, Upload, Image } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 const CATEGORIES = [
@@ -26,7 +26,9 @@ interface ProductFormModalProps {
 const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) => {
   const { t, dir } = useLanguage();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '', description: '', price: '', discountPrice: '', category: '',
     storeLocation: '', phoneNumber: '',
@@ -56,20 +58,73 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    const uploadPromises: Promise<string | null>[] = [];
 
     for (const file of Array.from(files)) {
-      const fileName = `${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from('product-images').upload(fileName, file);
-      if (error) { toast.error(t('error')); continue; }
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
-      setImages(prev => [...prev, publicUrl]);
+      const promise = (async () => {
+        try {
+          // Generate unique filename
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+          
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            return null;
+          }
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(fileName);
+          
+          return publicUrl;
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          return null;
+        }
+      })();
+      
+      uploadPromises.push(promise);
     }
+
+    const results = await Promise.all(uploadPromises);
+    const successfulUploads = results.filter((url): url is string => url !== null);
+    
+    if (successfulUploads.length > 0) {
+      setImages(prev => [...prev, ...successfulUploads]);
+      toast.success(`تم رفع ${successfulUploads.length} صورة بنجاح`);
+    }
+    
+    if (successfulUploads.length < files.length) {
+      toast.error(`فشل رفع ${files.length - successfulUploads.length} صورة`);
+    }
+
+    setIsUploading(false);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.category) { toast.error(t('error')); return; }
+    if (!formData.name || !formData.price || !formData.category) { 
+      toast.error(t('error')); 
+      return; 
+    }
     setIsSubmitting(true);
 
     try {
@@ -102,6 +157,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success(t('save'));
       onClose();
     } catch (error) {
@@ -122,8 +178,8 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input placeholder={t('productName') + ' *'} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
           <div className="grid grid-cols-2 gap-4">
-            <Input type="number" placeholder={t('price') + ' *'} value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
-            <Input type="number" placeholder={t('discountPrice')} value={formData.discountPrice} onChange={e => setFormData({...formData, discountPrice: e.target.value})} />
+            <Input type="number" placeholder={t('price') + ' (د.ج) *'} value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
+            <Input type="number" placeholder={t('discountPrice') + ' (د.ج)'} value={formData.discountPrice} onChange={e => setFormData({...formData, discountPrice: e.target.value})} />
           </div>
           <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
             <SelectTrigger className="bg-background">
@@ -144,19 +200,49 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
           {/* Images */}
           <div>
             <label className="block text-sm font-medium mb-2">{t('uploadImages')}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {images.map((url, i) => (
-                <div key={i} className="relative w-16 h-16">
-                  <img src={url} alt="" className="w-full h-full object-cover rounded-lg" />
-                  <button type="button" onClick={() => setImages(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
-                    <X className="h-3 w-3 text-destructive-foreground" />
+                <div key={i} className="relative w-20 h-20 group">
+                  <img src={url} alt="" className="w-full h-full object-cover rounded-lg border border-border" />
+                  <button 
+                    type="button" 
+                    onClick={() => removeImage(i)} 
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-destructive rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-4 w-4 text-destructive-foreground" />
                   </button>
+                  {i === 0 && (
+                    <span className="absolute bottom-1 left-1 text-[10px] bg-primary text-primary-foreground px-1 rounded">
+                      رئيسية
+                    </span>
+                  )}
                 </div>
               ))}
-              <label className="w-16 h-16 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary">
-                <Upload className="h-5 w-5 text-muted-foreground" />
-                <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-              </label>
+            </div>
+            <div 
+              onClick={() => !isUploading && fileInputRef.current?.click()}
+              className={`border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isUploading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              ) : (
+                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+              )}
+              <span className="text-sm text-muted-foreground">
+                {isUploading ? 'جاري الرفع...' : 'اضغط لرفع الصور'}
+              </span>
+              <span className="text-xs text-muted-foreground mt-1">
+                يمكنك رفع عدة صور في وقت واحد
+              </span>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept="image/*" 
+                multiple 
+                onChange={handleImageUpload} 
+                className="hidden" 
+                disabled={isUploading}
+              />
             </div>
           </div>
 
@@ -166,7 +252,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
             <div className="flex flex-wrap gap-2 mb-2">
               {colors.map((c, i) => (
                 <span key={i} className="flex items-center gap-1 px-2 py-1 bg-secondary rounded-lg text-sm">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: c.hex }} />
+                  <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.hex }} />
                   {c.name}
                   <button type="button" onClick={() => setColors(prev => prev.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button>
                 </span>
@@ -202,7 +288,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">{t('cancel')}</Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1 gradient-primary">
+            <Button type="submit" disabled={isSubmitting || isUploading} className="flex-1 gradient-primary">
               {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
             </Button>
           </div>

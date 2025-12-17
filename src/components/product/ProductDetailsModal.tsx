@@ -72,7 +72,7 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0" dir={dir}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden" dir={dir}>
           <DialogHeader className="sr-only">
             <DialogTitle>{product.name}</DialogTitle>
           </DialogHeader>

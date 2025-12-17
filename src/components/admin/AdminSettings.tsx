@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Loader2, Upload, Trash2, Image } from 'lucide-react';
+import { Loader2, Upload, Trash2 } from 'lucide-react';
 import defaultLogo from '@/assets/logo.png';
 
 const AdminSettings = () => {
@@ -29,34 +29,40 @@ const AdminSettings = () => {
     },
   });
 
-  const updateCopyrightMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      // First check if setting exists
+      const { data: existingData } = await supabase
         .from('settings')
-        .upsert({ key: 'copyright', value: copyright }, { onConflict: 'key' });
-      if (error) throw error;
+        .select('id')
+        .eq('key', key)
+        .maybeSingle();
+
+      if (existingData) {
+        // Update existing setting
+        const { error } = await supabase
+          .from('settings')
+          .update({ value, updated_at: new Date().toISOString() })
+          .eq('key', key);
+        if (error) throw error;
+      } else {
+        // Insert new setting
+        const { error } = await supabase
+          .from('settings')
+          .insert({ key, value });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
       queryClient.invalidateQueries({ queryKey: ['copyright-setting'] });
-      toast.success(t('save'));
-    },
-    onError: () => toast.error(t('error')),
-  });
-
-  const updateLogoMutation = useMutation({
-    mutationFn: async (newLogoUrl: string) => {
-      const { error } = await supabase
-        .from('settings')
-        .upsert({ key: 'app-logo', value: newLogoUrl }, { onConflict: 'key' });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
       queryClient.invalidateQueries({ queryKey: ['app-logo-setting'] });
       toast.success(t('save'));
     },
-    onError: () => toast.error(t('error')),
+    onError: (error) => {
+      console.error('Settings update error:', error);
+      toast.error(t('error'));
+    },
   });
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,10 +71,14 @@ const AdminSettings = () => {
 
     setIsUploadingLogo(true);
     try {
-      const fileName = `logo-${Date.now()}-${file.name}`;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
       if (uploadError) throw uploadError;
 
@@ -77,18 +87,25 @@ const AdminSettings = () => {
         .getPublicUrl(fileName);
 
       setLogoUrl(publicUrl);
-      await updateLogoMutation.mutateAsync(publicUrl);
+      await updateSettingMutation.mutateAsync({ key: 'app-logo', value: publicUrl });
     } catch (error) {
       console.error(error);
       toast.error(t('error'));
     } finally {
       setIsUploadingLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleDeleteLogo = async () => {
     setLogoUrl('');
-    await updateLogoMutation.mutateAsync('');
+    await updateSettingMutation.mutateAsync({ key: 'app-logo', value: '' });
+  };
+
+  const handleSaveCopyright = () => {
+    updateSettingMutation.mutate({ key: 'copyright', value: copyright });
   };
 
   if (isLoading) {
@@ -169,8 +186,12 @@ const AdminSettings = () => {
           placeholder="app dv"
           className="mb-4"
         />
-        <Button onClick={() => updateCopyrightMutation.mutate()} disabled={updateCopyrightMutation.isPending} className="gradient-primary">
-          {updateCopyrightMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
+        <Button 
+          onClick={handleSaveCopyright} 
+          disabled={updateSettingMutation.isPending} 
+          className="gradient-primary"
+        >
+          {updateSettingMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
         </Button>
       </div>
     </div>

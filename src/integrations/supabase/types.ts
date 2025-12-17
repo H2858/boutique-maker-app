@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      hero_banners: {
+        Row: {
+          created_at: string
+          gradient: string
+          id: string
+          is_active: boolean | null
+          sort_order: number | null
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gradient?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          subtitle: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gradient?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string

@@ -1,10 +1,15 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import defaultLogo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const Header = () => {
+interface HeaderProps {
+  onSearch?: (query: string) => void;
+  searchQuery?: string;
+}
+
+const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
   const { t, dir } = useLanguage();
 
   const { data: logoSetting } = useQuery({
@@ -20,8 +25,13 @@ const Header = () => {
     },
   });
 
-  const logoUrl = logoSetting || defaultLogo;
-  const showLogo = logoSetting !== '' || !logoSetting;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch?.(e.target.value);
+  };
+
+  const clearSearch = () => {
+    onSearch?.("");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-lg border-b border-border/50">
@@ -47,9 +57,19 @@ const Header = () => {
             <input
               type="search"
               placeholder={t('searchProducts')}
-              className={`w-full h-10 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'} rounded-xl bg-secondary border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all`}
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className={`w-full h-10 ${dir === 'rtl' ? 'pr-10 pl-10' : 'pl-10 pr-10'} rounded-xl bg-secondary border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all`}
               dir={dir}
             />
+            {searchQuery && (
+              <button 
+                onClick={clearSearch}
+                className={`absolute ${dir === 'rtl' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted-foreground/20 flex items-center justify-center hover:bg-muted-foreground/30 transition-colors`}
+              >
+                <X className="h-3 w-3 text-muted-foreground" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -61,9 +81,19 @@ const Header = () => {
           <input
             type="search"
             placeholder={t('searchProducts')}
-            className={`w-full h-10 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'} rounded-xl bg-secondary border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all`}
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className={`w-full h-10 ${dir === 'rtl' ? 'pr-10 pl-10' : 'pl-10 pr-10'} rounded-xl bg-secondary border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all`}
             dir={dir}
           />
+          {searchQuery && (
+            <button 
+              onClick={clearSearch}
+              className={`absolute ${dir === 'rtl' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted-foreground/20 flex items-center justify-center hover:bg-muted-foreground/30 transition-colors`}
+            >
+              <X className="h-3 w-3 text-muted-foreground" />
+            </button>
+          )}
         </div>
       </div>
     </header>

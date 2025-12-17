@@ -11,7 +11,24 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("home");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { dir } = useLanguage();
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    setSearchQuery("");
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setSelectedCategory(null);
+  };
+
+  const clearFilter = () => {
+    setSelectedCategory(null);
+    setSearchQuery("");
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -20,14 +37,18 @@ const Home = () => {
       case "favorites":
         return <FavoritesPage />;
       case "categories":
-        return <ProductGrid />;
+        return <ProductGrid searchQuery={searchQuery} onClearFilter={clearFilter} />;
       default:
         return (
           <>
             <HeroBanner />
-            <Categories />
-            <FlashDeals />
-            <ProductGrid />
+            <Categories onCategorySelect={handleCategorySelect} />
+            {!selectedCategory && !searchQuery && <FlashDeals />}
+            <ProductGrid 
+              categoryFilter={selectedCategory} 
+              searchQuery={searchQuery}
+              onClearFilter={clearFilter} 
+            />
           </>
         );
     }
@@ -35,7 +56,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20" dir={dir}>
-      <Header />
+      <Header onSearch={handleSearch} searchQuery={searchQuery} />
       
       <main className="animate-fade-in">
         {renderContent()}
