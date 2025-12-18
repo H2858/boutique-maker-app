@@ -1,7 +1,7 @@
 import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Switch } from '@/components/ui/switch';
-import { Moon, Sun, Globe, Lock } from 'lucide-react';
+import { Moon, Sun, Globe, Lock, Phone, Facebook, Instagram, Youtube, Twitter, Globe2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
@@ -12,19 +12,35 @@ const SettingsPage = () => {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  const { data: copyrightSetting } = useQuery({
-    queryKey: ['copyright-setting'],
+  const { data: settings } = useQuery({
+    queryKey: ['all-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'copyright')
-        .single();
-      
-      if (error) return 'app dv';
-      return data?.value || 'app dv';
+      const { data, error } = await supabase.from('settings').select('*');
+      if (error) throw error;
+      return data;
     },
   });
+
+  const getSetting = (key: string) => settings?.find(s => s.key === key)?.value || '';
+
+  const copyrightSetting = getSetting('copyright') || 'app dv';
+  const phoneLink = getSetting('contact-phone');
+  const facebookLink = getSetting('contact-facebook');
+  const instagramLink = getSetting('contact-instagram');
+  const twitterLink = getSetting('contact-twitter');
+  const youtubeLink = getSetting('contact-youtube');
+  const websiteLink = getSetting('contact-website');
+  const emailLink = getSetting('contact-email');
+
+  const socialLinks = [
+    { key: 'phone', value: phoneLink, icon: Phone, color: 'text-green-600', href: `tel:${phoneLink}` },
+    { key: 'facebook', value: facebookLink, icon: Facebook, color: 'text-blue-600', href: facebookLink },
+    { key: 'instagram', value: instagramLink, icon: Instagram, color: 'text-pink-600', href: instagramLink },
+    { key: 'twitter', value: twitterLink, icon: Twitter, color: 'text-sky-500', href: twitterLink },
+    { key: 'youtube', value: youtubeLink, icon: Youtube, color: 'text-red-600', href: youtubeLink },
+    { key: 'website', value: websiteLink, icon: Globe2, color: 'text-primary', href: websiteLink },
+    { key: 'email', value: emailLink, icon: Mail, color: 'text-orange-500', href: `mailto:${emailLink}` },
+  ].filter(link => link.value);
 
   const languages: { code: Language; name: string; nativeName: string }[] = [
     { code: 'ar', name: t('arabic'), nativeName: 'العربية' },
@@ -48,7 +64,9 @@ const SettingsPage = () => {
             )}
             <span className="font-medium text-foreground">{t('darkMode')}</span>
           </div>
-          <Switch checked={isDark} onCheckedChange={toggleTheme} />
+          <div dir="ltr">
+            <Switch checked={isDark} onCheckedChange={toggleTheme} />
+          </div>
         </div>
       </div>
 
@@ -76,6 +94,29 @@ const SettingsPage = () => {
         </div>
       </div>
 
+      {/* Social Links */}
+      {socialLinks.length > 0 && (
+        <div className="bg-card rounded-2xl p-4 mb-4 shadow-card">
+          <h3 className="font-medium text-foreground mb-4">{t('contactUs')}</h3>
+          <div className="flex flex-wrap justify-center gap-4">
+            {socialLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <a
+                  key={link.key}
+                  href={link.href}
+                  target={link.key !== 'phone' && link.key !== 'email' ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  className={`w-12 h-12 rounded-full bg-secondary flex items-center justify-center transition-all hover:scale-110 ${link.color}`}
+                >
+                  <Icon className="h-6 w-6" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Admin Access */}
       <div className="bg-card rounded-2xl p-4 mb-6 shadow-card">
         <Button
@@ -91,7 +132,7 @@ const SettingsPage = () => {
       {/* Copyright */}
       <div className="text-center text-sm text-muted-foreground mt-8">
         <p>{t('copyright')} © {new Date().getFullYear()}</p>
-        <p className="font-medium">{copyrightSetting || 'app dv'}</p>
+        <p className="font-medium">{copyrightSetting}</p>
       </div>
     </div>
   );

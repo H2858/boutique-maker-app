@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 import HeroBanner from "@/components/home/HeroBanner";
@@ -8,6 +8,7 @@ import ProductGrid from "@/components/home/ProductGrid";
 import SettingsPage from "@/components/settings/SettingsPage";
 import OffersPage from "@/components/offers/OffersPage";
 import CategoriesPage from "@/components/categories/CategoriesPage";
+import NewArrivalsPage from "@/components/newArrivals/NewArrivalsPage";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Home = () => {
@@ -15,11 +16,10 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { dir } = useLanguage();
-  const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
-  const tabs = ["home", "categories", "offers", "settings"];
+  const tabs = ["home", "categories", "newArrivals", "offers", "settings"];
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
@@ -53,14 +53,12 @@ const Home = () => {
       const currentIndex = tabs.indexOf(activeTab);
       
       if (dir === 'rtl') {
-        // RTL: swipe left = prev, swipe right = next
         if (diff > 0 && currentIndex > 0) {
           setActiveTab(tabs[currentIndex - 1]);
         } else if (diff < 0 && currentIndex < tabs.length - 1) {
           setActiveTab(tabs[currentIndex + 1]);
         }
       } else {
-        // LTR: swipe left = next, swipe right = prev
         if (diff > 0 && currentIndex < tabs.length - 1) {
           setActiveTab(tabs[currentIndex + 1]);
         } else if (diff < 0 && currentIndex > 0) {
@@ -78,6 +76,8 @@ const Home = () => {
         return <OffersPage />;
       case "categories":
         return <CategoriesPage />;
+      case "newArrivals":
+        return <NewArrivalsPage />;
       default:
         return (
           <>
@@ -98,7 +98,6 @@ const Home = () => {
     <div 
       className="min-h-screen bg-background pb-24" 
       dir={dir}
-      ref={containerRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

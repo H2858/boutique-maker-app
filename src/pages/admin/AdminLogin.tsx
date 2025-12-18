@@ -6,7 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Lock, Mail, Loader2 } from 'lucide-react';
-import logo from '@/assets/logo.png';
+import defaultLogo from '@/assets/logo.png';
+import { useQuery } from '@tanstack/react-query';
 
 const AdminLogin = () => {
   const { t, dir } = useLanguage();
@@ -14,6 +15,19 @@ const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: logoSetting } = useQuery({
+    queryKey: ['app-logo-setting'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'app-logo')
+        .maybeSingle();
+      if (error) throw error;
+      return data?.value || '';
+    },
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +68,11 @@ const AdminLogin = () => {
       <div className="w-full max-w-md">
         <div className="bg-card rounded-2xl shadow-card p-8">
           <div className="flex flex-col items-center mb-8">
-            <img src={logo} alt="Logo" className="w-20 h-20 object-contain mb-4" />
+            <img 
+              src={logoSetting || defaultLogo} 
+              alt="Logo" 
+              className="w-20 h-20 object-contain mb-4" 
+            />
             <h1 className="text-2xl font-bold text-foreground">{t('adminPanel')}</h1>
             <p className="text-muted-foreground">{t('login')}</p>
           </div>
