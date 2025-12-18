@@ -108,11 +108,22 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Cairo', 'Poppins', sans-serif;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Mobile-first text handling */
+  h1, h2, h3, h4, h5, h6, p, span, a, li, label {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 }
 

@@ -51,27 +51,24 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
 
   return (
     <div className={cn(
-      "group relative bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-medium transition-all duration-300",
-      variant === "compact" && "min-w-[160px]"
+      "group relative bg-card rounded-2xl shadow-card hover:shadow-md transition-all duration-300 w-full flex flex-col",
+      variant === "compact" && "min-w-0"
     )}>
       {/* Offer Timer Badge */}
       {offerTimeRemaining && (
-        <div className="absolute top-0 left-0 right-0 z-10 bg-accent/90 text-accent-foreground px-2 py-1 flex items-center justify-center gap-1">
-          <Timer className="h-3 w-3" />
+        <div className="w-full z-10 bg-accent/90 text-accent-foreground px-2 py-1 flex items-center justify-center gap-1">
+          <Timer className="h-3 w-3 flex-shrink-0" />
           <span className="text-xs font-bold">{offerTimeRemaining}</span>
         </div>
       )}
 
       {/* Image Container */}
-      <div className={cn(
-        "relative aspect-square overflow-hidden bg-secondary",
-        offerTimeRemaining && "mt-0"
-      )}>
+      <div className="relative aspect-square w-full bg-secondary">
         {primaryImage ? (
           <img
             src={primaryImage.image_url}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
@@ -81,24 +78,21 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
         
         {/* Discount Badge */}
         {discount > 0 && (
-          <div className={cn(
-            "absolute right-2 px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-bold",
-            offerTimeRemaining ? "top-2" : "top-2"
-          )}>
+          <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-bold">
             -{discount}%
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="p-3">
-        <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-2 min-h-[40px]">
+      <div className="p-3 flex flex-col flex-1">
+        <h3 className="text-sm font-medium text-foreground mb-2 break-words whitespace-normal leading-snug">
           {product.name}
         </h3>
 
         {/* Price */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-primary">
+        <div className="flex flex-wrap items-center gap-1 mt-auto">
+          <span className="text-base font-bold text-primary">
             {product.discount_price || product.price} د.ج
           </span>
           {product.discount_price && (

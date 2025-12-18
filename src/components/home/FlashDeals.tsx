@@ -39,19 +39,19 @@ const FlashDeals = () => {
   }
 
   return (
-    <section className="px-4 py-4" dir={dir}>
+    <section className="w-full max-w-full px-3 py-4" dir={dir}>
       <div className="flex items-center gap-2 mb-4">
         <div className="flex items-center gap-2 px-3 py-1 rounded-full gradient-primary">
-          <Zap className="h-4 w-4 text-primary-foreground fill-primary-foreground" />
+          <Zap className="h-4 w-4 text-primary-foreground fill-primary-foreground flex-shrink-0" />
           <span className="text-sm font-bold text-primary-foreground">{t('flashDeals')}</span>
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-3 px-3">
         {products.map((product, index) => (
           <div 
             key={product.id}
-            className="min-w-[160px] animate-fade-in-up cursor-pointer"
+            className="w-[140px] flex-shrink-0 animate-fade-in-up cursor-pointer"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => setSelectedProduct(product)}
           >
