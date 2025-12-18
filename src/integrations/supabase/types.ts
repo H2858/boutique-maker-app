@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           gradient: string
           id: string
+          image_url: string | null
           is_active: boolean | null
           sort_order: number | null
           subtitle: string
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           gradient?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           sort_order?: number | null
           subtitle: string
@@ -39,6 +41,7 @@ export type Database = {
           created_at?: string
           gradient?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           sort_order?: number | null
           subtitle?: string
@@ -56,6 +59,7 @@ export type Database = {
           id: string
           notes: string | null
           product_id: string
+          quantity: number | null
           selected_colors: string[] | null
           selected_sizes: string[] | null
           status: string | null
@@ -68,6 +72,7 @@ export type Database = {
           id?: string
           notes?: string | null
           product_id: string
+          quantity?: number | null
           selected_colors?: string[] | null
           selected_sizes?: string[] | null
           status?: string | null
@@ -80,6 +85,7 @@ export type Database = {
           id?: string
           notes?: string | null
           product_id?: string
+          quantity?: number | null
           selected_colors?: string[] | null
           selected_sizes?: string[] | null
           status?: string | null
@@ -187,8 +193,12 @@ export type Database = {
           created_at: string
           description: string | null
           discount_price: number | null
+          expires_at: string | null
           id: string
+          is_special_offer: boolean | null
           name: string
+          offer_duration_days: number | null
+          offer_end_date: string | null
           phone_number: string | null
           price: number
           store_location: string | null
@@ -199,8 +209,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount_price?: number | null
+          expires_at?: string | null
           id?: string
+          is_special_offer?: boolean | null
           name: string
+          offer_duration_days?: number | null
+          offer_end_date?: string | null
           phone_number?: string | null
           price: number
           store_location?: string | null
@@ -211,8 +225,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount_price?: number | null
+          expires_at?: string | null
           id?: string
+          is_special_offer?: boolean | null
           name?: string
+          offer_duration_days?: number | null
+          offer_end_date?: string | null
           phone_number?: string | null
           price?: number
           store_location?: string | null

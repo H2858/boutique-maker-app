@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Plus, X, Upload, Image } from 'lucide-react';
+import { Loader2, Plus, X, Upload } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 const CATEGORIES = [
@@ -15,6 +16,22 @@ const CATEGORIES = [
   { value: 'women', labelKey: 'categoryWomen' },
   { value: 'kids', labelKey: 'categoryKids' },
   { value: 'accessories', labelKey: 'categoryAccessories' },
+];
+
+const EXPIRATION_OPTIONS = [
+  { value: '15', label: '15 يوم' },
+  { value: '30', label: '30 يوم' },
+  { value: '60', label: '60 يوم' },
+  { value: '90', label: '90 يوم' },
+  { value: 'custom', label: 'مخصص' },
+];
+
+const OFFER_DURATION_OPTIONS = [
+  { value: '1', label: '1 يوم' },
+  { value: '3', label: '3 أيام' },
+  { value: '7', label: '7 أيام' },
+  { value: '14', label: '14 يوم' },
+  { value: '30', label: '30 يوم' },
 ];
 
 interface ProductFormModalProps {
@@ -32,6 +49,8 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
   const [formData, setFormData] = useState({
     name: '', description: '', price: '', discountPrice: '', category: '',
     storeLocation: '', phoneNumber: '',
+    isSpecialOffer: false, offerDurationDays: '',
+    enableExpiration: false, expirationDays: '', customExpirationDays: '',
   });
   const [colors, setColors] = useState<{ name: string; hex: string }[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
@@ -46,12 +65,21 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         price: product.price?.toString() || '', discountPrice: product.discount_price?.toString() || '',
         category: product.category || '', storeLocation: product.store_location || '',
         phoneNumber: product.phone_number || '',
+        isSpecialOffer: product.is_special_offer || false,
+        offerDurationDays: product.offer_duration_days?.toString() || '',
+        enableExpiration: !!product.expires_at,
+        expirationDays: '', customExpirationDays: '',
       });
       setColors(product.product_colors?.map((c: any) => ({ name: c.color_name, hex: c.color_hex })) || []);
       setSizes(product.product_sizes?.map((s: any) => s.size) || []);
       setImages(product.product_images?.map((i: any) => i.image_url) || []);
     } else {
-      setFormData({ name: '', description: '', price: '', discountPrice: '', category: '', storeLocation: '', phoneNumber: '' });
+      setFormData({ 
+        name: '', description: '', price: '', discountPrice: '', category: '', 
+        storeLocation: '', phoneNumber: '',
+        isSpecialOffer: false, offerDurationDays: '',
+        enableExpiration: false, expirationDays: '', customExpirationDays: '',
+      });
       setColors([]); setSizes([]); setImages([]);
     }
   }, [product, isOpen]);
@@ -64,9 +92,9 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
     const uploadPromises: Promise<string | null>[] = [];
 
     for (const file of Array.from(files)) {
+      // Compress image before upload
       const promise = (async () => {
         try {
-          // Generate unique filename
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
           
@@ -109,7 +137,6 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
     }
 
     setIsUploading(false);
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -128,10 +155,33 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
     setIsSubmitting(true);
 
     try {
+      // Calculate expiration date
+      let expiresAt = null;
+      if (formData.enableExpiration) {
+        const days = formData.expirationDays === 'custom' 
+          ? parseInt(formData.customExpirationDays) 
+          : parseInt(formData.expirationDays);
+        if (days) {
+          expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + days);
+        }
+      }
+
+      // Calculate offer end date
+      let offerEndDate = null;
+      if (formData.isSpecialOffer && formData.offerDurationDays) {
+        offerEndDate = new Date();
+        offerEndDate.setDate(offerEndDate.getDate() + parseInt(formData.offerDurationDays));
+      }
+
       const productData = {
         name: formData.name, description: formData.description || null,
         price: parseFloat(formData.price), discount_price: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
         category: formData.category, store_location: formData.storeLocation || null, phone_number: formData.phoneNumber || null,
+        is_special_offer: formData.isSpecialOffer,
+        offer_duration_days: formData.offerDurationDays ? parseInt(formData.offerDurationDays) : null,
+        offer_end_date: offerEndDate?.toISOString() || null,
+        expires_at: expiresAt?.toISOString() || null,
       };
 
       let productId = product?.id;
@@ -158,6 +208,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
 
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['special-offers'] });
       toast.success(t('save'));
       onClose();
     } catch (error) {
@@ -196,6 +247,62 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
           <Textarea placeholder={t('description')} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           <Input placeholder={t('storeLocation')} value={formData.storeLocation} onChange={e => setFormData({...formData, storeLocation: e.target.value})} />
           <Input placeholder={t('phoneNumber')} value={formData.phoneNumber} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} dir="ltr" />
+
+          {/* Special Offer */}
+          <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">{t('specialOffer')}</label>
+              <Switch 
+                checked={formData.isSpecialOffer} 
+                onCheckedChange={(checked) => setFormData({...formData, isSpecialOffer: checked})} 
+              />
+            </div>
+            {formData.isSpecialOffer && (
+              <Select value={formData.offerDurationDays} onValueChange={(value) => setFormData({...formData, offerDurationDays: value})}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="مدة العرض" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {OFFER_DURATION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          {/* Product Expiration */}
+          <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">{t('productExpiration')}</label>
+              <Switch 
+                checked={formData.enableExpiration} 
+                onCheckedChange={(checked) => setFormData({...formData, enableExpiration: checked})} 
+              />
+            </div>
+            {formData.enableExpiration && (
+              <>
+                <Select value={formData.expirationDays} onValueChange={(value) => setFormData({...formData, expirationDays: value})}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="مدة الصلاحية" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    {EXPIRATION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formData.expirationDays === 'custom' && (
+                  <Input 
+                    type="number" 
+                    placeholder="عدد الأيام"
+                    value={formData.customExpirationDays}
+                    onChange={e => setFormData({...formData, customExpirationDays: e.target.value})}
+                  />
+                )}
+              </>
+            )}
+          </div>
 
           {/* Images */}
           <div>
