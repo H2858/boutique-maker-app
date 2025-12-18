@@ -18,42 +18,59 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
     { id: "settings", icon: Settings, label: t('settings') },
   ];
 
-  // Center item index (index 2 for 5 items)
   const centerIndex = 2;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe animate-slide-in-bottom">
-      {/* Floating center button - positioned above the nav bar */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-[70px] z-20">
-        <button
-          onClick={() => onTabChange(navItems[centerIndex].id)}
-          className={cn(
-            "w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border-4 border-background",
-            activeTab === navItems[centerIndex].id 
-              ? "gradient-primary scale-110 shadow-2xl" 
-              : "bg-primary hover:scale-105"
-          )}
+      {/* Background with curved notch */}
+      <div className="relative">
+        {/* SVG curved background */}
+        <svg
+          className="absolute bottom-0 left-0 right-0 w-full"
+          height="85"
+          viewBox="0 0 500 85"
+          preserveAspectRatio="none"
         >
-          {(() => {
-            const Icon = navItems[centerIndex].icon;
-            return <Icon className="h-7 w-7 text-primary-foreground" />;
-          })()}
-        </button>
-      </div>
-
-      {/* Background bar */}
-      <div className="relative bg-card rounded-t-3xl shadow-lg">
+          <path
+            d="M0,25 L190,25 Q210,25 220,5 Q230,-10 250,0 Q270,-10 280,5 Q290,25 310,25 L500,25 L500,85 L0,85 Z"
+            className="fill-card"
+          />
+        </svg>
+        
+        {/* Floating center button */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-5 z-10">
+          <button
+            onClick={() => onTabChange(navItems[centerIndex].id)}
+            className={cn(
+              "w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-card",
+              activeTab === navItems[centerIndex].id 
+                ? "gradient-primary scale-110 shadow-xl" 
+                : "bg-primary hover:scale-105"
+            )}
+          >
+            {(() => {
+              const Icon = navItems[centerIndex].icon;
+              return <Icon className="h-6 w-6 text-primary-foreground" />;
+            })()}
+          </button>
+          {/* Label below button */}
+          <span className={cn(
+            "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-medium whitespace-nowrap transition-all duration-200",
+            activeTab === navItems[centerIndex].id ? "text-primary font-bold" : "text-muted-foreground"
+          )}>
+            {navItems[centerIndex].label}
+          </span>
+        </div>
 
         {/* Navigation items */}
-        <div className="flex items-center justify-around h-[70px] px-4">
+        <div className="relative flex items-end justify-around h-[70px] px-2 pt-3">
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             const isCenter = index === centerIndex;
             
-            // Spacer for center button
             if (isCenter) {
-              return <div key={item.id} className="w-16" />;
+              return <div key={item.id} className="w-14" />;
             }
             
             return (
@@ -61,7 +78,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 w-16 py-2 transition-all duration-200",
+                  "flex flex-col items-center justify-center gap-0.5 w-14 py-2 transition-all duration-200",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
@@ -70,7 +87,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                   isActive && "scale-110"
                 )} />
                 <span className={cn(
-                  "text-[10px] font-medium transition-all duration-200",
+                  "text-[9px] font-medium transition-all duration-200",
                   isActive && "font-bold"
                 )}>
                   {item.label}
