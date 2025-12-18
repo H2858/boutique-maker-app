@@ -116,9 +116,9 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" dir={dir}>
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl" dir={dir}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{t('orderForm')}</DialogTitle>
+          <DialogTitle className="text-lg font-bold break-words">{t('orderForm')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">

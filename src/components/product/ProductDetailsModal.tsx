@@ -128,7 +128,7 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden" dir={dir}>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden rounded-2xl" dir={dir}>
           <DialogHeader className="sr-only">
             <DialogTitle>{product.name}</DialogTitle>
           </DialogHeader>
@@ -210,12 +210,12 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-4">
             {/* Offer Timer */}
             {offerTimeRemaining && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10 border border-accent/20">
-                <Timer className="h-5 w-5 text-accent" />
-                <span className="text-sm font-medium text-accent">
+                <Timer className="h-5 w-5 text-accent flex-shrink-0" />
+                <span className="text-sm font-medium text-accent break-words">
                   {t('offerEndsIn')}: {offerTimeRemaining}
                 </span>
               </div>
@@ -223,13 +223,13 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
 
             {/* Name & Price */}
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">{product.name}</h2>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-primary">
+              <h2 className="text-lg font-bold text-foreground mb-2 break-words whitespace-normal">{product.name}</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xl font-bold text-primary">
                   {product.discount_price || product.price} د.ج
                 </span>
                 {product.discount_price && (
-                  <span className="text-lg text-muted-foreground line-through">
+                  <span className="text-base text-muted-foreground line-through">
                     {product.price} د.ج
                   </span>
                 )}
@@ -275,7 +275,7 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
             {product.description && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2">{t('description')}</h3>
-                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                <p className="text-muted-foreground leading-relaxed break-words whitespace-normal text-sm">{product.description}</p>
               </div>
             )}
 

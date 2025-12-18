@@ -77,33 +77,33 @@ const ProductGrid = ({ title, categoryFilter, searchQuery, onClearFilter }: Prod
   };
 
   return (
-    <section className="px-4 py-6" dir={dir}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-foreground">
+    <section className="w-full max-w-full px-3 py-4" dir={dir}>
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <h2 className="text-base font-bold text-foreground break-words">
             {categoryFilter ? getCategoryLabel(categoryFilter) : (title || t('featuredProducts'))}
           </h2>
           {categoryFilter && onClearFilter && (
             <button 
               onClick={onClearFilter}
-              className="p-1 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+              className="p-1 rounded-full bg-secondary hover:bg-secondary/80 transition-colors flex-shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
           )}
         </div>
         {!categoryFilter && (
-          <button className="text-sm text-primary font-medium hover:underline">
+          <button className="text-sm text-primary font-medium hover:underline flex-shrink-0">
             {t('viewAll')}
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 w-full">
         {products.map((product, index) => (
           <div 
             key={product.id}
-            className="animate-fade-in-up cursor-pointer"
+            className="animate-fade-in-up cursor-pointer w-full"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => setSelectedProduct(product)}
           >
