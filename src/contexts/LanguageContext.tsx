@@ -17,11 +17,14 @@ export const translations: Translations = {
   categories: { ar: 'الأقسام', en: 'Categories', fr: 'Catégories', ber: 'ⵜⴰⴳⴳⴰⵢⵉⵏ' },
   favorites: { ar: 'المفضلة', en: 'Favorites', fr: 'Favoris', ber: 'ⵉⵎⵓⵔⴰⵏ' },
   settings: { ar: 'الإعدادات', en: 'Settings', fr: 'Paramètres', ber: 'ⵉⵙⵖⴰⵍ' },
+  offers: { ar: 'العروض', en: 'Offers', fr: 'Offres', ber: 'ⵉⵙⵜⴰⵢⵏ' },
+  newArrivals: { ar: 'الجديد', en: 'New', fr: 'Nouveau', ber: 'ⴰⵎⴰⵢⵏⵓ' },
   
   // Welcome
   welcome: { ar: 'مرحباً بك في', en: 'Welcome to', fr: 'Bienvenue à', ber: 'ⴰⵏⵙⵓⴼ ⵖⵔ' },
   getStarted: { ar: 'ابدأ الآن', en: 'GET STARTED', fr: 'COMMENCER', ber: 'ⴱⴷⵓ' },
   discoverProducts: { ar: 'اكتشف أفضل المنتجات بأسعار مميزة', en: 'Discover the best products at great prices', fr: 'Découvrez les meilleurs produits à des prix exceptionnels', ber: 'ⴰⴼ ⵉⴼⵔⴷⵉⵙⵏ ⵉⴼⵓⵍⴽⵉⵏ' },
+  agreeTerms: { ar: 'بالمتابعة، أنت توافق على شروط الاستخدام', en: 'By continuing, you agree to our terms', fr: 'En continuant, vous acceptez nos conditions', ber: 'ⵙ ⵓⴽⵎⵎⵍ, ⵜⵇⴱⵍⴷ ⵜⵉⵡⵜⵉⵍⵉⵏ' },
   
   // Products
   products: { ar: 'المنتجات', en: 'Products', fr: 'Produits', ber: 'ⵉⴼⵔⴷⵉⵙⵏ' },
@@ -35,6 +38,7 @@ export const translations: Translations = {
   description: { ar: 'الوصف', en: 'Description', fr: 'Description', ber: 'ⴰⴳⵍⴰⵎ' },
   storeLocation: { ar: 'موقع المحل', en: 'Store Location', fr: 'Emplacement du magasin', ber: 'ⴰⴷⵖⴰⵔ ⵏ ⵜⵃⴰⵏⵓⵜ' },
   phoneNumber: { ar: 'رقم الهاتف', en: 'Phone Number', fr: 'Numéro de téléphone', ber: 'ⵓⵟⵟⵓⵏ ⵏ ⵜⵉⵍⵉⴼⵓⵏ' },
+  viewProduct: { ar: 'عرض المنتج', en: 'View Product', fr: 'Voir le produit', ber: 'ⵥⵔ ⴰⴼⵔⴷⵉⵙ' },
   
   // Order Form
   orderForm: { ar: 'نموذج الطلب', en: 'Order Form', fr: 'Formulaire de commande', ber: 'ⵜⴰⵍⵖⴰ ⵏ ⵓⵣⵣⵏⵣ' },
@@ -46,6 +50,7 @@ export const translations: Translations = {
   notes: { ar: 'ملاحظات', en: 'Notes', fr: 'Notes', ber: 'ⵜⵉⵏⵥⵉⵢⵉⵏ' },
   submitOrder: { ar: 'إرسال الطلب', en: 'Submit Order', fr: 'Soumettre la commande', ber: 'ⴰⵣⵏ ⴰⵣⵣⵏⵣ' },
   orderSuccess: { ar: 'تم إرسال طلبك بنجاح!', en: 'Your order has been submitted successfully!', fr: 'Votre commande a été soumise avec succès!', ber: 'ⵉⵜⵜⵡⴰⵣⵏ ⵓⵣⵣⵏⵣ ⵏⵏⴽ!' },
+  quantity: { ar: 'الكمية', en: 'Quantity', fr: 'Quantité', ber: 'ⵜⴰⵎⴰⴽⵜ' },
   
   // Settings
   language: { ar: 'اللغة', en: 'Language', fr: 'Langue', ber: 'ⵜⵓⵜⵍⴰⵢⵜ' },
@@ -55,6 +60,7 @@ export const translations: Translations = {
   french: { ar: 'الفرنسية', en: 'French', fr: 'Français', ber: 'ⵜⴰⴼⵔⴰⵏⵙⵉⵙⵜ' },
   amazigh: { ar: 'الأمازيغية', en: 'Amazigh', fr: 'Amazigh', ber: 'ⵜⴰⵎⴰⵣⵉⵖⵜ' },
   copyright: { ar: 'جميع الحقوق محفوظة', en: 'All rights reserved', fr: 'Tous droits réservés', ber: 'ⴰⴽⴽ ⵉⵣⵔⴼⴰⵏ ⵜⵜⵡⴰⵃⵔⵣⵏ' },
+  contactUs: { ar: 'تواصل معنا', en: 'Contact Us', fr: 'Contactez-nous', ber: 'ⵎⵢⴰⵡⴰⴹ ⴷⵉⴷⵏⵖ' },
   
   // Admin
   adminPanel: { ar: 'لوحة التحكم', en: 'Admin Panel', fr: 'Panneau d\'administration', ber: 'ⴰⴳⵎⵔ ⵏ ⵓⵙⵙⵓⴷⵓ' },
@@ -101,6 +107,28 @@ export const translations: Translations = {
   replaceLogo: { ar: 'استبدال الشعار', en: 'Replace Logo', fr: 'Remplacer le logo', ber: 'ⵙⵏⴼⵍ ⴰⵎⴰⵜⴰⵔ' },
   deleteLogo: { ar: 'حذف الشعار', en: 'Delete Logo', fr: 'Supprimer le logo', ber: 'ⴽⴽⵙ ⴰⵎⴰⵜⴰⵔ' },
   noLogoMessage: { ar: 'لا يوجد شعار مخصص. سيتم استخدام الشعار الافتراضي.', en: 'No custom logo. Default logo will be used.', fr: 'Pas de logo personnalisé. Le logo par défaut sera utilisé.', ber: 'ⵓⵔ ⵉⵍⵍⵉ ⵓⵎⴰⵜⴰⵔ. ⴰⴷ ⵉⵜⵜⵓⵙⵎⵔⵙ ⵓⵎⴰⵜⴰⵔ ⴰⵎⵣⵡⴰⵔⵓ.' },
+  
+  // Offers
+  specialOffer: { ar: 'عرض خاص', en: 'Special Offer', fr: 'Offre spéciale', ber: 'ⴰⵙⵜⴰⵢ ⴰⵎⵥⵍⴰⵢ' },
+  specialOffersDescription: { ar: 'أفضل العروض والتخفيضات', en: 'Best offers and discounts', fr: 'Meilleures offres et réductions', ber: 'ⵉⵙⵜⴰⵢⵏ ⵉⴼⵓⵍⴽⵉⵏ' },
+  noOffers: { ar: 'لا توجد عروض حالياً', en: 'No offers available', fr: 'Pas d\'offres disponibles', ber: 'ⵓⵔ ⵍⵍⵉⵏ ⵉⵙⵜⴰⵢⵏ' },
+  checkBackLater: { ar: 'تحقق لاحقاً', en: 'Check back later', fr: 'Revenez plus tard', ber: 'ⵓⵖⴰⵍ ⵜⵥⵔⴷ' },
+  offerEndsIn: { ar: 'ينتهي العرض في', en: 'Offer ends in', fr: 'L\'offre se termine dans', ber: 'ⴰⵙⵜⴰⵢ ⵉⴽⵎⵎⵍ ⴳ' },
+  days: { ar: 'يوم', en: 'days', fr: 'jours', ber: 'ⵓⵙⵙⴰⵏ' },
+  hours: { ar: 'ساعة', en: 'hours', fr: 'heures', ber: 'ⵜⵉⵙⵔⴰⴳⵉⵏ' },
+  productExpiration: { ar: 'انتهاء صلاحية المنتج', en: 'Product Expiration', fr: 'Expiration du produit', ber: 'ⴰⴽⵎⴰⵍ ⵏ ⵓⴼⵔⴷⵉⵙ' },
+  
+  // New Arrivals
+  newArrivalsDescription: { ar: 'أحدث المنتجات المضافة', en: 'Latest products added', fr: 'Derniers produits ajoutés', ber: 'ⵉⴼⵔⴷⵉⵙⵏ ⵉⵎⴰⵢⵏⵓⵜⵏ' },
+  noNewProducts: { ar: 'لا توجد منتجات جديدة', en: 'No new products', fr: 'Pas de nouveaux produits', ber: 'ⵓⵔ ⵍⵍⵉⵏ ⵉⴼⵔⴷⵉⵙⵏ ⵉⵎⴰⵢⵏⵓⵜⵏ' },
+  
+  // Categories
+  back: { ar: 'رجوع', en: 'Back', fr: 'Retour', ber: 'ⵓⵖⴰⵍ' },
+  
+  // Social
+  socialLinks: { ar: 'روابط التواصل', en: 'Social Links', fr: 'Liens sociaux', ber: 'ⵉⵙⵖⵏⴰⵏ ⵏ ⵜⵎⵢⴰⵡⴰⴹⵜ' },
+  phone: { ar: 'الهاتف', en: 'Phone', fr: 'Téléphone', ber: 'ⵜⵉⵍⵉⴼⵓⵏ' },
+  website: { ar: 'الموقع', en: 'Website', fr: 'Site web', ber: 'ⴰⵙⵉⵜ' },
 };
 
 interface LanguageContextType {
@@ -127,8 +155,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const t = (key: string): string => {
     return translations[key]?.[language] || key;
   };
-
-  // Export language for components that need it
 
   const dir = language === 'ar' || language === 'ber' ? 'rtl' : 'ltr';
 

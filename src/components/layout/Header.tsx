@@ -38,13 +38,11 @@ const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          {(logoSetting === undefined || logoSetting === null || logoSetting !== '') && (
-            <img 
-              src={logoSetting || defaultLogo} 
-              alt="Boutique Mancer" 
-              className="h-10 w-auto object-contain" 
-            />
-          )}
+          <img 
+            src={logoSetting || defaultLogo} 
+            alt="Boutique Mancer" 
+            className="h-10 w-auto object-contain" 
+          />
           <span className="hidden sm:block text-lg font-bold text-gradient">
             BOUTIQUE MANCER
           </span>
