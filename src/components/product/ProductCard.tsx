@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Heart, Star } from "lucide-react";
+import { Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -14,6 +13,8 @@ interface Product {
   name: string;
   price: number;
   discount_price: number | null;
+  is_special_offer?: boolean;
+  offer_end_date?: string | null;
   product_images: ProductImage[];
 }
 
@@ -24,20 +25,48 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
   const { t } = useLanguage();
-  const [isFavorite, setIsFavorite] = useState(false);
 
   const primaryImage = product.product_images?.find(img => img.is_primary) || product.product_images?.[0];
   const discount = product.discount_price 
     ? Math.round(((product.price - product.discount_price) / product.price) * 100)
     : 0;
 
+  // Calculate remaining time for offer
+  const getOfferTimeRemaining = () => {
+    if (!product.is_special_offer || !product.offer_end_date) return null;
+    const now = new Date();
+    const end = new Date(product.offer_end_date);
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return null;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h`;
+  };
+
+  const offerTimeRemaining = getOfferTimeRemaining();
+
   return (
     <div className={cn(
       "group relative bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-medium transition-all duration-300",
       variant === "compact" && "min-w-[160px]"
     )}>
+      {/* Offer Timer Badge */}
+      {offerTimeRemaining && (
+        <div className="absolute top-0 left-0 right-0 z-10 bg-accent/90 text-accent-foreground px-2 py-1 flex items-center justify-center gap-1">
+          <Timer className="h-3 w-3" />
+          <span className="text-xs font-bold">{offerTimeRemaining}</span>
+        </div>
+      )}
+
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-secondary">
+      <div className={cn(
+        "relative aspect-square overflow-hidden bg-secondary",
+        offerTimeRemaining && "mt-0"
+      )}>
         {primaryImage ? (
           <img
             src={primaryImage.image_url}
@@ -52,24 +81,13 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
         
         {/* Discount Badge */}
         {discount > 0 && (
-          <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-bold">
+          <div className={cn(
+            "absolute right-2 px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-bold",
+            offerTimeRemaining ? "top-2" : "top-2"
+          )}>
             -{discount}%
           </div>
         )}
-
-        {/* Favorite Button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setIsFavorite(!isFavorite); }}
-          className={cn(
-            "absolute top-2 left-2 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-all duration-200",
-            isFavorite && "bg-accent text-accent-foreground"
-          )}
-        >
-          <Heart className={cn(
-            "h-4 w-4 transition-all",
-            isFavorite && "fill-current scale-110"
-          )} />
-        </button>
       </div>
 
       {/* Content */}
