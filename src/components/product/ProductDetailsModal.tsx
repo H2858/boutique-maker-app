@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { MapPin, Phone, X, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
 import OrderFormModal from './OrderFormModal';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProductImage {
   id: string;
@@ -77,7 +78,6 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   const goToPrevImage = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    // Restart auto-play
     if (images.length > 1) {
       autoPlayRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -88,7 +88,6 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   const goToNextImage = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    // Restart auto-play
     if (images.length > 1) {
       autoPlayRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -107,7 +106,6 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
     }
   };
 
-  // Calculate remaining time for offer
   const getOfferTimeRemaining = () => {
     if (!product.offer_end_date) return null;
     const now = new Date();
@@ -128,13 +126,13 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden rounded-2xl" dir={dir}>
+        <DialogContent className="w-[95vw] max-w-lg h-[90vh] p-0 [&>button]:hidden rounded-2xl flex flex-col" dir={dir}>
           <DialogHeader className="sr-only">
             <DialogTitle>{product.name}</DialogTitle>
           </DialogHeader>
           
-          {/* Image Gallery with Arrows */}
-          <div className="relative aspect-square bg-secondary overflow-hidden">
+          {/* Image Gallery - Fixed Height */}
+          <div className="relative h-[45%] min-h-[200px] bg-secondary overflow-hidden flex-shrink-0">
             {images.length > 0 ? (
               <>
                 <div 
@@ -209,106 +207,108 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-4 space-y-4">
-            {/* Offer Timer */}
-            {offerTimeRemaining && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10 border border-accent/20">
-                <Timer className="h-5 w-5 text-accent flex-shrink-0" />
-                <span className="text-sm font-medium text-accent break-words">
-                  {t('offerEndsIn')}: {offerTimeRemaining}
-                </span>
-              </div>
-            )}
-
-            {/* Name & Price */}
-            <div>
-              <h2 className="text-lg font-bold text-foreground mb-2 break-words whitespace-normal">{product.name}</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xl font-bold text-primary">
-                  {product.discount_price || product.price} د.ج
-                </span>
-                {product.discount_price && (
-                  <span className="text-base text-muted-foreground line-through">
-                    {product.price} د.ج
+          {/* Scrollable Content */}
+          <ScrollArea className="flex-1 overflow-y-auto">
+            <div className="p-4 space-y-4">
+              {/* Offer Timer */}
+              {offerTimeRemaining && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10 border border-accent/20">
+                  <Timer className="h-5 w-5 text-accent flex-shrink-0" />
+                  <span className="text-sm font-medium text-accent break-words">
+                    {t('offerEndsIn')}: {offerTimeRemaining}
                   </span>
+                </div>
+              )}
+
+              {/* Name & Price */}
+              <div>
+                <h2 className="text-lg font-bold text-foreground mb-2 break-words whitespace-normal">{product.name}</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xl font-bold text-primary">
+                    {product.discount_price || product.price} د.ج
+                  </span>
+                  {product.discount_price && (
+                    <span className="text-base text-muted-foreground line-through">
+                      {product.price} د.ج
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Colors */}
+              {colors.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">{t('availableColors')}</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {colors.map((color) => (
+                      <div key={color.id} className="flex items-center gap-2">
+                        <div
+                          className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
+                          style={{ backgroundColor: color.color_hex }}
+                        />
+                        <span className="text-sm text-muted-foreground">{color.color_name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sizes */}
+              {sizes.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">{t('availableSizes')}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {sizes.map((size) => (
+                      <span
+                        key={size.id}
+                        className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
+                      >
+                        {size.size}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {product.description && (
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">{t('description')}</h3>
+                  <p className="text-muted-foreground leading-relaxed break-words whitespace-normal text-sm">{product.description}</p>
+                </div>
+              )}
+
+              {/* Store Info */}
+              <div className="space-y-3 pt-4 border-t border-border">
+                {product.store_location && (
+                  <button
+                    onClick={openGoogleMaps}
+                    className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors w-full text-start"
+                  >
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <span className="underline">{product.store_location}</span>
+                  </button>
+                )}
+                {product.phone_number && (
+                  <a 
+                    href={`tel:${product.phone_number}`}
+                    className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Phone className="h-5 w-5 text-primary" />
+                    <span dir="ltr">{product.phone_number}</span>
+                  </a>
                 )}
               </div>
+
+              {/* Order Button */}
+              <Button
+                onClick={() => setShowOrderForm(true)}
+                className="w-full py-6 text-lg font-bold rounded-xl gradient-primary text-primary-foreground"
+              >
+                {t('orderProduct')}
+              </Button>
             </div>
-
-            {/* Colors */}
-            {colors.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-foreground mb-3">{t('availableColors')}</h3>
-                <div className="flex flex-wrap gap-3">
-                  {colors.map((color) => (
-                    <div key={color.id} className="flex items-center gap-2">
-                      <div
-                        className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
-                        style={{ backgroundColor: color.color_hex }}
-                      />
-                      <span className="text-sm text-muted-foreground">{color.color_name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Sizes */}
-            {sizes.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-foreground mb-3">{t('availableSizes')}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {sizes.map((size) => (
-                    <span
-                      key={size.id}
-                      className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
-                    >
-                      {size.size}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Description */}
-            {product.description && (
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">{t('description')}</h3>
-                <p className="text-muted-foreground leading-relaxed break-words whitespace-normal text-sm">{product.description}</p>
-              </div>
-            )}
-
-            {/* Store Info */}
-            <div className="space-y-3 pt-4 border-t border-border">
-              {product.store_location && (
-                <button
-                  onClick={openGoogleMaps}
-                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors w-full text-start"
-                >
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <span className="underline">{product.store_location}</span>
-                </button>
-              )}
-              {product.phone_number && (
-                <a 
-                  href={`tel:${product.phone_number}`}
-                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Phone className="h-5 w-5 text-primary" />
-                  <span dir="ltr">{product.phone_number}</span>
-                </a>
-              )}
-            </div>
-
-            {/* Order Button */}
-            <Button
-              onClick={() => setShowOrderForm(true)}
-              className="w-full py-6 text-lg font-bold rounded-xl gradient-primary text-primary-foreground"
-            >
-              {t('orderProduct')}
-            </Button>
-          </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
