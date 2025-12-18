@@ -2,22 +2,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, Eye, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import ProductDetailsModal from '@/components/product/ProductDetailsModal';
 
 const AdminOrders = () => {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [deletingOrder, setDeletingOrder] = useState<any>(null);
+  const [viewingProduct, setViewingProduct] = useState<any>(null);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, products(name)')
+        .select('*, products(*, product_images(*), product_colors(*), product_sizes(*))')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -49,11 +51,17 @@ const AdminOrders = () => {
         {orders?.map((order) => (
           <div key={order.id} className="bg-card rounded-xl p-4 shadow-card">
             <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">{order.products?.name}</h3>
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-foreground">{order.products?.name}</h3>
+                </div>
                 <p className="text-sm text-muted-foreground">{t('customerName')}: {order.customer_name}</p>
                 <p className="text-sm text-muted-foreground">{t('customerPhone')}: {order.customer_phone}</p>
                 <p className="text-sm text-muted-foreground">{t('customerLocation')}: {order.customer_location}</p>
+                {order.quantity && order.quantity > 1 && (
+                  <p className="text-sm text-muted-foreground">{t('quantity')}: {order.quantity}</p>
+                )}
                 {order.selected_colors?.length > 0 && (
                   <p className="text-sm text-muted-foreground">{t('colors')}: {order.selected_colors.join(', ')}</p>
                 )}
@@ -63,9 +71,20 @@ const AdminOrders = () => {
                 {order.notes && <p className="text-sm text-muted-foreground">{t('notes')}: {order.notes}</p>}
                 <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
               </div>
-              <Button size="sm" variant="destructive" onClick={() => setDeletingOrder(order)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setViewingProduct(order.products)}
+                  className="flex items-center gap-1"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span className="text-xs">{t('viewProduct')}</span>
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => setDeletingOrder(order)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
@@ -80,6 +99,12 @@ const AdminOrders = () => {
         onClose={() => setDeletingOrder(null)}
         onConfirm={() => deleteMutation.mutate(deletingOrder?.id)}
         isLoading={deleteMutation.isPending}
+      />
+
+      <ProductDetailsModal
+        product={viewingProduct}
+        isOpen={!!viewingProduct}
+        onClose={() => setViewingProduct(null)}
       />
     </div>
   );

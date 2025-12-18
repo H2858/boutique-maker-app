@@ -1,7 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Shirt, Baby, Watch, Gem, Sparkles, Smartphone, Home, ShoppingBag, Footprints, User } from 'lucide-react';
+import { Shirt, Baby, Watch, Users } from 'lucide-react';
 
 interface CategoriesProps {
   onCategorySelect?: (category: string) => void;
@@ -24,18 +24,15 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
   });
 
   const categoryConfig: { [key: string]: { bg: string; icon: React.ReactNode; label: string } } = {
-    'men': { bg: 'bg-blue-100 dark:bg-blue-900/30', icon: <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />, label: t('categoryMen') },
-    'women': { bg: 'bg-pink-100 dark:bg-pink-900/30', icon: <Sparkles className="w-6 h-6 text-pink-600 dark:text-pink-400" />, label: t('categoryWomen') },
+    'men': { bg: 'bg-blue-100 dark:bg-blue-900/30', icon: <Shirt className="w-6 h-6 text-blue-600 dark:text-blue-400" />, label: t('categoryMen') },
+    'women': { bg: 'bg-pink-100 dark:bg-pink-900/30', icon: <Users className="w-6 h-6 text-pink-600 dark:text-pink-400" />, label: t('categoryWomen') },
     'kids': { bg: 'bg-cyan-100 dark:bg-cyan-900/30', icon: <Baby className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />, label: t('categoryKids') },
     'accessories': { bg: 'bg-amber-100 dark:bg-amber-900/30', icon: <Watch className="w-6 h-6 text-amber-600 dark:text-amber-400" />, label: t('categoryAccessories') },
-    'shoes': { bg: 'bg-orange-100 dark:bg-orange-900/30', icon: <Footprints className="w-6 h-6 text-orange-600 dark:text-orange-400" />, label: 'أحذية' },
-    'electronics': { bg: 'bg-slate-100 dark:bg-slate-900/30', icon: <Smartphone className="w-6 h-6 text-slate-600 dark:text-slate-400" />, label: 'إلكترونيات' },
-    'home': { bg: 'bg-green-100 dark:bg-green-900/30', icon: <Home className="w-6 h-6 text-green-600 dark:text-green-400" />, label: 'منزل' },
   };
 
   const getConfig = (cat: string) => categoryConfig[cat] || { 
     bg: 'bg-secondary', 
-    icon: <ShoppingBag className="w-6 h-6 text-muted-foreground" />, 
+    icon: <Shirt className="w-6 h-6 text-muted-foreground" />, 
     label: cat 
   };
 
@@ -45,9 +42,6 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
     <section className="px-4 py-6" dir={dir}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-foreground">{t('categories')}</h2>
-        <button className="text-sm text-primary font-medium hover:underline">
-          {t('viewAll')}
-        </button>
       </div>
       
       <div className="grid grid-cols-4 gap-3">

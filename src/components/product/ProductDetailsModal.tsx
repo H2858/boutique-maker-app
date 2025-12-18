@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, TouchEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MapPin, Phone, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { MapPin, Phone, X, Timer } from 'lucide-react';
 import OrderFormModal from './OrderFormModal';
+import { cn } from '@/lib/utils';
 
 interface ProductImage {
   id: string;
@@ -31,6 +32,8 @@ interface Product {
   category: string;
   store_location: string | null;
   phone_number: string | null;
+  is_special_offer?: boolean;
+  offer_end_date?: string | null;
   product_images: ProductImage[];
   product_colors: ProductColor[];
   product_sizes: ProductSize[];
@@ -46,28 +49,90 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   const { t, dir } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+
+  const images = product?.product_images || [];
+  const colors = product?.product_colors || [];
+  const sizes = product?.product_sizes || [];
+
+  // Auto-play images
+  useEffect(() => {
+    if (images.length > 1) {
+      autoPlayRef.current = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 4000);
+    }
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    };
+  }, [images.length, isOpen]);
+
+  // Reset index when modal opens
+  useEffect(() => {
+    if (isOpen) setCurrentImageIndex(0);
+  }, [isOpen]);
 
   if (!product) return null;
 
-  const images = product.product_images || [];
-  const colors = product.product_colors || [];
-  const sizes = product.product_sizes || [];
-
-  const nextImage = () => {
-    if (images.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
   };
 
-  const prevImage = () => {
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold && images.length > 1) {
+      if (diff > 0) {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      } else {
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+    }
+    
+    // Restart auto-play
     if (images.length > 1) {
-      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      autoPlayRef.current = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 4000);
     }
   };
 
   const discount = product.discount_price 
     ? Math.round(((product.price - product.discount_price) / product.price) * 100)
     : 0;
+
+  const openGoogleMaps = () => {
+    if (product.store_location) {
+      const query = encodeURIComponent(product.store_location);
+      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+    }
+  };
+
+  // Calculate remaining time for offer
+  const getOfferTimeRemaining = () => {
+    if (!product.offer_end_date) return null;
+    const now = new Date();
+    const end = new Date(product.offer_end_date);
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return null;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days} ${t('days')} ${hours} ${t('hours')}`;
+    return `${hours} ${t('hours')}`;
+  };
+
+  const offerTimeRemaining = getOfferTimeRemaining();
 
   return (
     <>
@@ -77,43 +142,45 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
             <DialogTitle>{product.name}</DialogTitle>
           </DialogHeader>
           
-          {/* Image Gallery */}
-          <div className="relative aspect-square bg-secondary">
+          {/* Image Gallery with Swipe */}
+          <div 
+            className="relative aspect-square bg-secondary overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             {images.length > 0 ? (
               <>
-                <img
-                  src={images[currentImageIndex]?.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                <div 
+                  className="flex transition-transform duration-300 h-full"
+                  style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                >
+                  {images.map((img, index) => (
+                    <img
+                      key={img.id}
+                      src={img.image_url}
+                      alt={product.name}
+                      className="min-w-full h-full object-cover"
+                    />
+                  ))}
+                </div>
+                
+                {/* Image indicators */}
                 {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                      {images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentImageIndex 
-                              ? 'bg-primary w-6' 
-                              : 'bg-card/60'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={cn(
+                          "h-2 rounded-full transition-all",
+                          index === currentImageIndex 
+                            ? 'bg-primary w-6' 
+                            : 'w-2 bg-card/60'
+                        )}
+                      />
+                    ))}
+                  </div>
                 )}
               </>
             ) : (
@@ -140,6 +207,16 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
 
           {/* Content */}
           <div className="p-6 space-y-6">
+            {/* Offer Timer */}
+            {offerTimeRemaining && (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-accent/10 border border-accent/20">
+                <Timer className="h-5 w-5 text-accent" />
+                <span className="text-sm font-medium text-accent">
+                  {t('offerEndsIn')}: {offerTimeRemaining}
+                </span>
+              </div>
+            )}
+
             {/* Name & Price */}
             <div>
               <h2 className="text-xl font-bold text-foreground mb-2">{product.name}</h2>
@@ -201,10 +278,13 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
             {/* Store Info */}
             <div className="space-y-3 pt-4 border-t border-border">
               {product.store_location && (
-                <div className="flex items-center gap-3 text-muted-foreground">
+                <button
+                  onClick={openGoogleMaps}
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors w-full text-start"
+                >
                   <MapPin className="h-5 w-5 text-primary" />
-                  <span>{product.store_location}</span>
-                </div>
+                  <span className="underline">{product.store_location}</span>
+                </button>
               )}
               {product.phone_number && (
                 <a 

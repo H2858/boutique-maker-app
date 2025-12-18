@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Minus, Plus } from 'lucide-react';
 
 interface ProductColor {
   id: string;
@@ -43,6 +43,7 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
     selectedColors: [] as string[],
     selectedSizes: [] as string[],
     notes: '',
+    quantity: 1,
   });
 
   const handleColorToggle = (colorName: string) => {
@@ -60,6 +61,13 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
       selectedSizes: prev.selectedSizes.includes(size)
         ? prev.selectedSizes.filter((s) => s !== size)
         : [...prev.selectedSizes, size],
+    }));
+  };
+
+  const updateQuantity = (delta: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      quantity: Math.max(1, prev.quantity + delta),
     }));
   };
 
@@ -82,6 +90,7 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
         selected_colors: formData.selectedColors,
         selected_sizes: formData.selectedSizes,
         notes: formData.notes || null,
+        quantity: formData.quantity,
       });
 
       if (error) throw error;
@@ -94,6 +103,7 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
         selectedColors: [],
         selectedSizes: [],
         notes: '',
+        quantity: 1,
       });
       onClose();
     } catch (error) {
@@ -151,6 +161,33 @@ const OrderFormModal = ({ isOpen, onClose, product, colors, sizes }: OrderFormMo
               placeholder={t('yourLocation')}
               required
             />
+          </div>
+
+          {/* Quantity */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              {t('quantity')}
+            </label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => updateQuantity(-1)}
+                disabled={formData.quantity <= 1}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="text-xl font-bold w-12 text-center">{formData.quantity}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => updateQuantity(1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Colors */}
