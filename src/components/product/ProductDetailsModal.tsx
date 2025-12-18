@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect, TouchEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MapPin, Phone, X, Timer } from 'lucide-react';
+import { MapPin, Phone, X, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
 import OrderFormModal from './OrderFormModal';
 import { cn } from '@/lib/utils';
 
@@ -49,8 +49,6 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
   const { t, dir } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showOrderForm, setShowOrderForm] = useState(false);
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
   const images = product?.product_images || [];
@@ -59,7 +57,7 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
 
   // Auto-play images
   useEffect(() => {
-    if (images.length > 1) {
+    if (images.length > 1 && isOpen) {
       autoPlayRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
       }, 4000);
@@ -76,27 +74,20 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
 
   if (!product) return null;
 
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  const goToPrevImage = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-
-    if (Math.abs(diff) > threshold && images.length > 1) {
-      if (diff > 0) {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    // Restart auto-play
+    if (images.length > 1) {
+      autoPlayRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      } else {
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      }
+      }, 4000);
     }
-    
+  };
+
+  const goToNextImage = () => {
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
     // Restart auto-play
     if (images.length > 1) {
       autoPlayRef.current = setInterval(() => {
@@ -142,20 +133,15 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
             <DialogTitle>{product.name}</DialogTitle>
           </DialogHeader>
           
-          {/* Image Gallery with Swipe */}
-          <div 
-            className="relative aspect-square bg-secondary overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
+          {/* Image Gallery with Arrows */}
+          <div className="relative aspect-square bg-secondary overflow-hidden">
             {images.length > 0 ? (
               <>
                 <div 
                   className="flex transition-transform duration-300 h-full"
-                  style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                  style={{ transform: `translateX(${dir === 'rtl' ? '' : '-'}${currentImageIndex * 100}%)` }}
                 >
-                  {images.map((img, index) => (
+                  {images.map((img) => (
                     <img
                       key={img.id}
                       src={img.image_url}
@@ -164,6 +150,24 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
                     />
                   ))}
                 </div>
+                
+                {/* Navigation Arrows */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={goToPrevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors z-10"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={goToNextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors z-10"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  </>
+                )}
                 
                 {/* Image indicators */}
                 {images.length > 1 && (
