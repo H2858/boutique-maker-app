@@ -2,11 +2,30 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { useAppSettings } from '@/hooks/useAppSettings';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
-  const { appName, appLogo } = useAppSettings();
+  const { appName, appLogo, isLoading: isAppSettingsLoading } = useAppSettings();
+
+  // Fetch welcome background settings
+  const { data: welcomeSettings } = useQuery({
+    queryKey: ['welcome-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['welcome-mode', 'welcome-media']);
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const welcomeMode = welcomeSettings?.find(s => s.key === 'welcome-mode')?.value || 'default';
+  const welcomeMedia = welcomeSettings?.find(s => s.key === 'welcome-media')?.value || '';
 
   const handleGetStarted = () => {
     localStorage.setItem('hasVisited', 'true');
@@ -18,52 +37,76 @@ const Welcome = () => {
   const firstName = nameParts[0] || appName;
   const restName = nameParts.slice(1).join(' ');
 
-  // Generate grid items - all orange with shimmer
+  // Generate asymmetric grid items - varied sizes and positions
   const gridItems = [
-    { delay: 0 },
-    { delay: 0.5 },
-    { delay: 1 },
-    { delay: 1.5 },
-    { delay: 0.3 },
-    { delay: 0.8 },
-    { delay: 1.3 },
-    { delay: 0.2 },
-    { delay: 0.7 },
-    { delay: 1.2 },
-    { delay: 0.4 },
-    { delay: 0.9 },
+    { delay: 0, colSpan: 2, rowSpan: 1 },
+    { delay: 0.5, colSpan: 1, rowSpan: 2 },
+    { delay: 1, colSpan: 1, rowSpan: 1 },
+    { delay: 1.5, colSpan: 1, rowSpan: 1 },
+    { delay: 0.3, colSpan: 2, rowSpan: 1 },
+    { delay: 0.8, colSpan: 1, rowSpan: 1 },
+    { delay: 1.3, colSpan: 1, rowSpan: 2 },
+    { delay: 0.2, colSpan: 2, rowSpan: 1 },
   ];
+
+  const isVideo = welcomeMedia && (welcomeMedia.endsWith('.mp4') || welcomeMedia.endsWith('.webm') || welcomeMedia.endsWith('.mov'));
 
   return (
     <div 
       className="min-h-screen flex flex-col bg-background relative overflow-hidden"
       dir={dir}
     >
-      {/* Background Grid - All Orange with Shimmer Animation */}
-      <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2">
-        {gridItems.map((item, index) => (
-          <div 
-            key={index}
-            className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 rounded-xl overflow-hidden shadow-lg shadow-orange-500/30"
-            style={{ animationDelay: `${item.delay}s` }}
-          >
-            {/* Shimmer effect */}
-            <div 
-              className="absolute inset-0 animate-shimmer-down"
-              style={{ animationDelay: `${item.delay}s` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-transparent" />
-            </div>
-            {/* Glow border */}
-            <div className="absolute inset-0 rounded-xl border-2 border-orange-300/60" />
-            {/* Pulse glow effect */}
-            <div 
-              className="absolute inset-0 animate-pulse-glow rounded-xl"
-              style={{ animationDelay: `${item.delay + 0.5}s` }}
+      {/* Background - Custom Media or Default Grid */}
+      {welcomeMode === 'custom' && welcomeMedia ? (
+        <div className="absolute inset-0">
+          {isVideo ? (
+            <video 
+              src={welcomeMedia} 
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
             />
-          </div>
-        ))}
-      </div>
+          ) : (
+            <img 
+              src={welcomeMedia} 
+              alt="Welcome Background"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 grid grid-cols-3 auto-rows-fr gap-2 p-2">
+          {gridItems.map((item, index) => (
+            <div 
+              key={index}
+              className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 rounded-xl overflow-hidden shadow-lg shadow-orange-500/30"
+              style={{ 
+                animationDelay: `${item.delay}s`,
+                gridColumn: `span ${item.colSpan}`,
+                gridRow: `span ${item.rowSpan}`,
+              }}
+            >
+              {/* Shimmer effect */}
+              <div 
+                className="absolute inset-0 animate-shimmer-down"
+                style={{ animationDelay: `${item.delay}s` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-transparent" />
+              </div>
+              {/* Glow border */}
+              <div className="absolute inset-0 rounded-xl border-2 border-orange-300/60" />
+              {/* Pulse glow effect */}
+              <div 
+                className="absolute inset-0 animate-pulse-glow rounded-xl"
+                style={{ animationDelay: `${item.delay + 0.5}s` }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Logo at top center */}
       <div className="relative z-10 pt-10 flex justify-center">
