@@ -1,22 +1,21 @@
-import { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Plus, Pencil, Trash2, Loader2, Upload, Image, Video } from 'lucide-react';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import DeleteConfirmModal from './DeleteConfirmModal';
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Pencil, Trash2, Image, Video } from "lucide-react";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 const GRADIENT_OPTIONS = [
-  { value: 'from-primary via-primary-glow to-accent', label: 'أساسي' },
-  { value: 'from-accent via-pink-500 to-primary', label: 'وردي' },
-  { value: 'from-success via-emerald-400 to-teal-500', label: 'أخضر' },
-  { value: 'from-blue-500 via-blue-400 to-cyan-500', label: 'أزرق' },
-  { value: 'from-purple-500 via-violet-400 to-pink-500', label: 'بنفسجي' },
-  { value: 'from-orange-500 via-amber-400 to-yellow-500', label: 'برتقالي' },
+  { label: "أحمر - برتقالي", value: "from-primary via-primary-glow to-accent" },
+  { label: "وردي", value: "from-accent via-pink-500 to-primary" },
+  { label: "أخضر", value: "from-success via-emerald-400 to-teal-500" },
+  { label: "أزرق", value: "from-blue-600 via-blue-500 to-cyan-400" },
+  { label: "بنفسجي", value: "from-purple-600 via-purple-500 to-pink-500" },
 ];
 
 const AdminBanners = () => {
@@ -24,6 +23,7 @@ const AdminBanners = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState<any>(null);
   const [deletingBanner, setDeletingBanner] = useState<any>(null);
@@ -39,7 +39,7 @@ const AdminBanners = () => {
     video_url: '',
   });
 
-  const { data: banners, isLoading } = useQuery({
+  const { data: banners } = useQuery({
     queryKey: ['admin-banners'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -73,7 +73,7 @@ const AdminBanners = () => {
         .from('product-images')
         .getPublicUrl(fileName);
       
-      setFormData({ ...formData, image_url: publicUrl });
+      setFormData({ ...formData, image_url: publicUrl, video_url: '' });
       toast.success('تم رفع الصورة');
     } catch (error) {
       console.error(error);
@@ -126,10 +126,7 @@ const AdminBanners = () => {
 
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from('hero_banners')
-        .update({ is_active })
-        .eq('id', id);
+      const { error } = await supabase.from('hero_banners').update({ is_active }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -143,8 +140,8 @@ const AdminBanners = () => {
     if (banner) {
       setEditingBanner(banner);
       setFormData({
-        title: banner.title,
-        subtitle: banner.subtitle,
+        title: banner.title || '',
+        subtitle: banner.subtitle || '',
         gradient: banner.gradient,
         is_active: banner.is_active,
         sort_order: banner.sort_order,
@@ -164,6 +161,11 @@ const AdminBanners = () => {
       });
     }
     setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingBanner(null);
   };
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,21 +209,15 @@ const AdminBanners = () => {
     }
   };
 
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingBanner(null);
-  };
-
-  if (isLoading) {
-    return <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
+  // Check if form has enough data to save (either media or text content)
+  const canSave = formData.image_url || formData.video_url || (formData.title && formData.subtitle);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">الشريط الإعلاني</h2>
-        <Button onClick={() => handleOpenForm()} className="gradient-primary">
-          <Plus className="h-5 w-5 mr-2" />
+    <div className="space-y-6" dir={dir}>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">إدارة الإعلانات</h2>
+        <Button onClick={() => handleOpenForm()}>
+          <Plus className="h-4 w-4 mr-2" />
           إضافة إعلان
         </Button>
       </div>
@@ -239,18 +235,18 @@ const AdminBanners = () => {
                 <video src={banner.video_url} className="w-full h-40 object-cover" muted loop autoPlay playsInline />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
                   <div className="text-center text-white">
-                    <h3 className="text-xl font-bold">{banner.title}</h3>
-                    <p className="opacity-90">{banner.subtitle}</p>
+                    <h3 className="text-xl font-bold">{banner.title || ''}</h3>
+                    <p className="opacity-90">{banner.subtitle || ''}</p>
                   </div>
                 </div>
               </div>
             ) : banner.image_url ? (
               <div className="relative">
-                <img src={banner.image_url} alt={banner.title} className="w-full h-40 object-cover" />
+                <img src={banner.image_url} alt={banner.title || ''} className="w-full h-40 object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white">
-                    <h3 className="text-xl font-bold">{banner.title}</h3>
-                    <p className="opacity-90">{banner.subtitle}</p>
+                    <h3 className="text-xl font-bold">{banner.title || ''}</h3>
+                    <p className="opacity-90">{banner.subtitle || ''}</p>
                   </div>
                 </div>
               </div>
@@ -278,7 +274,6 @@ const AdminBanners = () => {
         ))}
       </div>
 
-      {/* Form Modal */}
       <Dialog open={showForm} onOpenChange={handleCloseForm}>
         <DialogContent dir={dir}>
           <DialogHeader>
@@ -286,7 +281,7 @@ const AdminBanners = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">العنوان</label>
+              <label className="block text-sm font-medium mb-2">العنوان (اختياري)</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -294,7 +289,7 @@ const AdminBanners = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">النص الفرعي</label>
+              <label className="block text-sm font-medium mb-2">النص الفرعي (اختياري)</label>
               <Input
                 value={formData.subtitle}
                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
@@ -332,103 +327,91 @@ const AdminBanners = () => {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Image upload */}
-                  <div 
-                    onClick={() => !isUploading && !isUploadingVideo && fileInputRef.current?.click()}
-                    className={`border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploading ? 'opacity-50' : ''}`}
-                  >
-                    {isUploading ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    ) : (
-                      <>
-                        <Image className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">رفع صورة</span>
-                      </>
-                    )}
-                    <input 
-                      ref={fileInputRef}
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload} 
-                      className="hidden" 
-                      disabled={isUploading || isUploadingVideo}
-                    />
-                  </div>
-                  
-                  {/* Video upload */}
-                  <div 
-                    onClick={() => !isUploading && !isUploadingVideo && videoInputRef.current?.click()}
-                    className={`border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploadingVideo ? 'opacity-50' : ''}`}
-                  >
-                    {isUploadingVideo ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    ) : (
-                      <>
-                        <Video className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">رفع فيديو</span>
-                      </>
-                    )}
-                    <input 
-                      ref={videoInputRef}
-                      type="file" 
-                      accept="video/*" 
-                      onChange={handleVideoUpload} 
-                      className="hidden" 
-                      disabled={isUploading || isUploadingVideo}
-                    />
-                  </div>
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">الحد الأقصى للفيديو: 50MB</p>
+              ) : null}
+
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading || isUploadingVideo}
+                  className="flex-1"
+                >
+                  <Image className="h-4 w-4 mr-2" />
+                  {isUploading ? 'جاري الرفع...' : 'رفع صورة'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={isUploading || isUploadingVideo}
+                  className="flex-1"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  {isUploadingVideo ? 'جاري الرفع...' : 'رفع فيديو'}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">الحد الأقصى لحجم الفيديو: 50MB</p>
             </div>
 
+            {/* Gradient selection (only if no image/video) */}
             {!formData.image_url && !formData.video_url && (
               <div>
-                <label className="block text-sm font-medium mb-2">اللون</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {GRADIENT_OPTIONS.map((option) => (
+                <label className="block text-sm font-medium mb-2">لون الخلفية</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {GRADIENT_OPTIONS.map((opt) => (
                     <button
-                      key={option.value}
+                      key={opt.value}
                       type="button"
-                      onClick={() => setFormData({ ...formData, gradient: option.value })}
-                      className={`h-12 rounded-lg bg-gradient-to-l ${option.value} ${
-                        formData.gradient === option.value ? 'ring-2 ring-foreground ring-offset-2' : ''
+                      className={`h-12 rounded-lg bg-gradient-to-l ${opt.value} transition-all ${
+                        formData.gradient === opt.value ? 'ring-2 ring-primary ring-offset-2' : ''
                       }`}
+                      onClick={() => setFormData({ ...formData, gradient: opt.value })}
+                      title={opt.label}
                     />
                   ))}
                 </div>
               </div>
             )}
 
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={formData.is_active}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              />
+              <span>نشط</span>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium mb-2">ترتيب الظهور</label>
+              <label className="block text-sm font-medium mb-2">ترتيب العرض</label>
               <Input
                 type="number"
                 value={formData.sort_order}
                 onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">نشط</label>
-              <Switch
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={handleCloseForm} className="flex-1">
-                {t('cancel')}
-              </Button>
-              <Button 
-                onClick={() => saveMutation.mutate()} 
-                disabled={saveMutation.isPending || !formData.title || !formData.subtitle}
-                className="flex-1 gradient-primary"
-              >
-                {saveMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
-              </Button>
-            </div>
+
+            <Button 
+              className="w-full" 
+              onClick={() => saveMutation.mutate()}
+              disabled={!canSave || saveMutation.isPending}
+            >
+              {saveMutation.isPending ? 'جاري الحفظ...' : 'حفظ'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -437,7 +420,6 @@ const AdminBanners = () => {
         isOpen={!!deletingBanner}
         onClose={() => setDeletingBanner(null)}
         onConfirm={() => deleteMutation.mutate(deletingBanner?.id)}
-        isLoading={deleteMutation.isPending}
       />
     </div>
   );

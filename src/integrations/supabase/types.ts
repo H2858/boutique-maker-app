@@ -22,8 +22,8 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           sort_order: number | null
-          subtitle: string
-          title: string
+          subtitle: string | null
+          title: string | null
           updated_at: string
           video_url: string | null
         }
@@ -34,8 +34,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           sort_order?: number | null
-          subtitle: string
-          title: string
+          subtitle?: string | null
+          title?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -46,8 +46,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           sort_order?: number | null
-          subtitle?: string
-          title?: string
+          subtitle?: string | null
+          title?: string | null
           updated_at?: string
           video_url?: string | null
         }
