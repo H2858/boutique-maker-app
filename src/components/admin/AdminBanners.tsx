@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Pencil, Trash2, Loader2, Upload, Image } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, Image, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -23,10 +23,12 @@ const AdminBanners = () => {
   const { t, dir } = useLanguage();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState<any>(null);
   const [deletingBanner, setDeletingBanner] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
@@ -34,6 +36,7 @@ const AdminBanners = () => {
     is_active: true,
     sort_order: 0,
     image_url: '',
+    video_url: '',
   });
 
   const { data: banners, isLoading } = useQuery({
@@ -146,6 +149,7 @@ const AdminBanners = () => {
         is_active: banner.is_active,
         sort_order: banner.sort_order,
         image_url: banner.image_url || '',
+        video_url: banner.video_url || '',
       });
     } else {
       setEditingBanner(null);
@@ -156,9 +160,51 @@ const AdminBanners = () => {
         is_active: true,
         sort_order: banners?.length || 0,
         image_url: '',
+        video_url: '',
       });
     }
     setShowForm(true);
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('حجم الفيديو كبير جداً (الحد الأقصى 50MB)');
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `video-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+      
+      setFormData({ ...formData, video_url: publicUrl, image_url: '' });
+      toast.success('تم رفع الفيديو');
+    } catch (error) {
+      console.error(error);
+      toast.error(t('error'));
+    } finally {
+      setIsUploadingVideo(false);
+      if (videoInputRef.current) {
+        videoInputRef.current.value = '';
+      }
+    }
   };
 
   const handleCloseForm = () => {
@@ -181,14 +227,24 @@ const AdminBanners = () => {
       </div>
 
       <div className="grid gap-4">
-        {banners?.map((banner) => (
+        {banners?.map((banner: any) => (
           <div 
             key={banner.id} 
             className={`rounded-xl overflow-hidden relative ${
-              banner.image_url ? '' : `bg-gradient-to-l ${banner.gradient}`
+              banner.image_url || banner.video_url ? '' : `bg-gradient-to-l ${banner.gradient}`
             }`}
           >
-            {banner.image_url ? (
+            {banner.video_url ? (
+              <div className="relative">
+                <video src={banner.video_url} className="w-full h-40 object-cover" muted loop autoPlay playsInline />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <div className="text-center text-white">
+                    <h3 className="text-xl font-bold">{banner.title}</h3>
+                    <p className="opacity-90">{banner.subtitle}</p>
+                  </div>
+                </div>
+              </div>
+            ) : banner.image_url ? (
               <div className="relative">
                 <img src={banner.image_url} alt={banner.title} className="w-full h-40 object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -246,10 +302,24 @@ const AdminBanners = () => {
               />
             </div>
 
-            {/* Image Upload */}
+            {/* Media Upload - Image or Video */}
             <div>
-              <label className="block text-sm font-medium mb-2">صورة الإعلان (اختياري)</label>
-              {formData.image_url ? (
+              <label className="block text-sm font-medium mb-2">وسائط الإعلان (صورة أو فيديو قصير)</label>
+              
+              {formData.video_url ? (
+                <div className="relative rounded-lg overflow-hidden mb-2">
+                  <video src={formData.video_url} className="w-full h-32 object-cover" muted loop autoPlay playsInline />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 right-2"
+                    onClick={() => setFormData({ ...formData, video_url: '' })}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : formData.image_url ? (
                 <div className="relative rounded-lg overflow-hidden mb-2">
                   <img src={formData.image_url} alt="" className="w-full h-32 object-cover" />
                   <Button
@@ -263,31 +333,58 @@ const AdminBanners = () => {
                   </Button>
                 </div>
               ) : (
-                <div 
-                  onClick={() => !isUploading && fileInputRef.current?.click()}
-                  className={`border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploading ? 'opacity-50' : ''}`}
-                >
-                  {isUploading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  ) : (
-                    <>
-                      <Image className="h-6 w-6 text-muted-foreground mb-1" />
-                      <span className="text-xs text-muted-foreground">رفع صورة</span>
-                    </>
-                  )}
-                  <input 
-                    ref={fileInputRef}
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
-                    className="hidden" 
-                    disabled={isUploading}
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Image upload */}
+                  <div 
+                    onClick={() => !isUploading && !isUploadingVideo && fileInputRef.current?.click()}
+                    className={`border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploading ? 'opacity-50' : ''}`}
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    ) : (
+                      <>
+                        <Image className="h-6 w-6 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground">رفع صورة</span>
+                      </>
+                    )}
+                    <input 
+                      ref={fileInputRef}
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload} 
+                      className="hidden" 
+                      disabled={isUploading || isUploadingVideo}
+                    />
+                  </div>
+                  
+                  {/* Video upload */}
+                  <div 
+                    onClick={() => !isUploading && !isUploadingVideo && videoInputRef.current?.click()}
+                    className={`border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${isUploadingVideo ? 'opacity-50' : ''}`}
+                  >
+                    {isUploadingVideo ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    ) : (
+                      <>
+                        <Video className="h-6 w-6 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground">رفع فيديو</span>
+                      </>
+                    )}
+                    <input 
+                      ref={videoInputRef}
+                      type="file" 
+                      accept="video/*" 
+                      onChange={handleVideoUpload} 
+                      className="hidden" 
+                      disabled={isUploading || isUploadingVideo}
+                    />
+                  </div>
                 </div>
               )}
+              <p className="text-xs text-muted-foreground mt-1">الحد الأقصى للفيديو: 50MB</p>
             </div>
 
-            {!formData.image_url && (
+            {!formData.image_url && !formData.video_url && (
               <div>
                 <label className="block text-sm font-medium mb-2">اللون</label>
                 <div className="grid grid-cols-3 gap-2">
