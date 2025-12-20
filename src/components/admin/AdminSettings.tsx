@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Loader2, Upload, Trash2, Phone, Facebook, Instagram, Twitter, Youtube, Globe, Mail } from 'lucide-react';
+import { Loader2, Upload, Trash2, Phone, Facebook, Instagram, Twitter, Youtube, Globe, Mail, Image, Video, Sparkles } from 'lucide-react';
 import defaultLogo from '@/assets/logo.png';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
@@ -28,7 +28,11 @@ const AdminSettings = () => {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [showDeleteLogo, setShowDeleteLogo] = useState(false);
   const [socialValues, setSocialValues] = useState<Record<string, string>>({});
+  const [welcomeMode, setWelcomeMode] = useState('default');
+  const [welcomeMedia, setWelcomeMedia] = useState('');
+  const [isUploadingWelcome, setIsUploadingWelcome] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const welcomeInputRef = useRef<HTMLInputElement>(null);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['admin-settings'],
@@ -39,9 +43,14 @@ const AdminSettings = () => {
       const copyrightSetting = data?.find(s => s.key === 'copyright');
       const logoSetting = data?.find(s => s.key === 'app-logo');
       const appNameSetting = data?.find(s => s.key === 'app-name');
+      const welcomeModeSetting = data?.find(s => s.key === 'welcome-mode');
+      const welcomeMediaSetting = data?.find(s => s.key === 'welcome-media');
+      
       setCopyright(copyrightSetting?.value || 'app dv');
       setLogoUrl(logoSetting?.value || '');
       setAppName(appNameSetting?.value || 'BOUTIQUE MANCER');
+      setWelcomeMode(welcomeModeSetting?.value || 'default');
+      setWelcomeMedia(welcomeMediaSetting?.value || '');
       
       // Set social values
       const socialData: Record<string, string> = {};
@@ -82,6 +91,8 @@ const AdminSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['copyright-setting'] });
       queryClient.invalidateQueries({ queryKey: ['app-logo-setting'] });
       queryClient.invalidateQueries({ queryKey: ['app-name-setting'] });
+      queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['welcome-settings'] });
       toast.success(t('save'));
     },
     onError: (error) => {
@@ -137,14 +148,156 @@ const AdminSettings = () => {
     updateSettingMutation.mutate({ key, value: socialValues[key] || '' });
   };
 
+  const handleWelcomeMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingWelcome(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `welcome-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+      
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      setWelcomeMedia(publicUrl);
+      await updateSettingMutation.mutateAsync({ key: 'welcome-media', value: publicUrl });
+      await updateSettingMutation.mutateAsync({ key: 'welcome-mode', value: 'custom' });
+      setWelcomeMode('custom');
+    } catch (error) {
+      console.error(error);
+      toast.error(t('error'));
+    } finally {
+      setIsUploadingWelcome(false);
+      if (welcomeInputRef.current) welcomeInputRef.current.value = '';
+    }
+  };
+
+  const handleSetDefaultWelcome = async () => {
+    setWelcomeMode('default');
+    await updateSettingMutation.mutateAsync({ key: 'welcome-mode', value: 'default' });
+  };
+
+  const handleDeleteWelcomeMedia = async () => {
+    setWelcomeMedia('');
+    setWelcomeMode('default');
+    await updateSettingMutation.mutateAsync({ key: 'welcome-media', value: '' });
+    await updateSettingMutation.mutateAsync({ key: 'welcome-mode', value: 'default' });
+  };
+
   if (isLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
+
+  const isWelcomeVideo = welcomeMedia && (welcomeMedia.endsWith('.mp4') || welcomeMedia.endsWith('.webm') || welcomeMedia.endsWith('.mov'));
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">{t('settings')}</h2>
       
+      {/* Welcome Screen Customization */}
+      <div className="bg-card rounded-xl p-6 shadow-card">
+        <label className="block text-sm font-medium text-foreground mb-4">
+          تخصيص الواجهة الترحيبية
+        </label>
+        
+        {/* Mode Selection */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <button
+            onClick={handleSetDefaultWelcome}
+            className={`p-4 rounded-xl border-2 transition-all ${
+              welcomeMode === 'default' 
+                ? 'border-primary bg-primary/10' 
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <Sparkles className={`h-8 w-8 mx-auto mb-2 ${welcomeMode === 'default' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <span className={`text-sm font-medium ${welcomeMode === 'default' ? 'text-primary' : 'text-foreground'}`}>
+              التصميم الافتراضي
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">المستطيلات البرتقالية</p>
+          </button>
+          
+          <button
+            onClick={() => welcomeInputRef.current?.click()}
+            className={`p-4 rounded-xl border-2 transition-all ${
+              welcomeMode === 'custom' 
+                ? 'border-primary bg-primary/10' 
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <Image className={`h-8 w-8 mx-auto mb-2 ${welcomeMode === 'custom' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <span className={`text-sm font-medium ${welcomeMode === 'custom' ? 'text-primary' : 'text-foreground'}`}>
+              صورة / فيديو مخصص
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">رفع صورة أو فيديو</p>
+          </button>
+        </div>
+
+        <input 
+          type="file" 
+          accept="image/*,video/*" 
+          onChange={handleWelcomeMediaUpload} 
+          ref={welcomeInputRef} 
+          className="hidden" 
+        />
+
+        {isUploadingWelcome && (
+          <div className="flex items-center gap-2 text-primary">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">جاري الرفع...</span>
+          </div>
+        )}
+
+        {/* Preview of custom media */}
+        {welcomeMode === 'custom' && welcomeMedia && (
+          <div className="mt-4 space-y-3">
+            <div className="relative aspect-[9/16] max-w-[200px] rounded-xl overflow-hidden border-2 border-border">
+              {isWelcomeVideo ? (
+                <video 
+                  src={welcomeMedia} 
+                  className="w-full h-full object-cover"
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img 
+                  src={welcomeMedia} 
+                  alt="Welcome Background" 
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => welcomeInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                تغيير
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={handleDeleteWelcomeMedia}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                حذف
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Logo Management */}
       <div className="bg-card rounded-xl p-6 shadow-card">
         <label className="block text-sm font-medium text-foreground mb-4">
