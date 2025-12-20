@@ -21,6 +21,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean | null
+          media_position: string | null
           sort_order: number | null
           subtitle: string | null
           title: string | null
@@ -33,6 +34,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          media_position?: string | null
           sort_order?: number | null
           subtitle?: string | null
           title?: string | null
@@ -45,11 +47,36 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          media_position?: string | null
           sort_order?: number | null
           subtitle?: string | null
           title?: string | null
           updated_at?: string
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
         }
         Relationships: []
       }
