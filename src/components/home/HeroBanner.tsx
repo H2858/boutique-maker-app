@@ -3,14 +3,16 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Volume2, VolumeX } from "lucide-react";
 
 const HeroBanner = () => {
   const { dir } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { data: banners } = useQuery({
     queryKey: ['hero-banners'],
@@ -63,6 +65,13 @@ const HeroBanner = () => {
     setIsVideoPlaying(true);
   };
 
+  // Play video when slide changes to a video slide
+  useEffect(() => {
+    if (currentBanner?.video_url && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [currentSlide, currentBanner?.video_url]);
+
   const handleTouchStart = (e: TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -109,18 +118,28 @@ const HeroBanner = () => {
             {banner.video_url ? (
               <>
                 <video 
-                  ref={(el) => {
-                    if (el) videoRefs.current.set(banner.id, el);
-                  }}
+                  ref={index === currentSlide ? videoRef : undefined}
                   src={banner.video_url} 
                   className="absolute inset-0 w-full h-full object-cover"
-                  muted
-                  autoPlay={index === currentSlide}
+                  muted={isMuted}
+                  autoPlay
                   playsInline
                   onEnded={handleVideoEnded}
                   onPlay={handleVideoPlay}
+                  onLoadedData={(e) => {
+                    if (index === currentSlide) {
+                      e.currentTarget.play().catch(() => {});
+                    }
+                  }}
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-black/10" />
+                {/* Mute/Unmute Button */}
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="absolute bottom-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+                >
+                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </button>
                 {(banner.title || banner.subtitle) && (
                   <div className="relative z-10 text-white text-center space-y-2">
                     {banner.title && <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>}
