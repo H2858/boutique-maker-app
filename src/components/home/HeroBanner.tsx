@@ -74,16 +74,32 @@ const HeroBanner = () => {
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(${dir === 'rtl' ? currentSlide * 100 : -currentSlide * 100}%)` }}
       >
-        {displayBanners.map((banner) => (
+        {displayBanners.map((banner: any) => (
           <div
             key={banner.id}
             className={cn(
               "min-w-full h-40 sm:h-48 md:h-56 rounded-2xl flex items-center justify-center px-6 sm:px-8 relative overflow-hidden",
-              !banner.image_url && `bg-gradient-to-l ${banner.gradient}`
+              !banner.image_url && !banner.video_url && `bg-gradient-to-l ${banner.gradient}`
             )}
             dir={dir}
           >
-            {banner.image_url ? (
+            {banner.video_url ? (
+              <>
+                <video 
+                  src={banner.video_url} 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                />
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="relative z-10 text-white text-center space-y-2">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>
+                  <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>
+                </div>
+              </>
+            ) : banner.image_url ? (
               <>
                 <img 
                   src={banner.image_url} 

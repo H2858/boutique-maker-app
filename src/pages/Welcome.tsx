@@ -24,33 +24,33 @@ const Welcome = () => {
       dir={dir}
     >
       {/* Background Grid with Animated Orange Elements */}
-      <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2 opacity-80">
+      <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2">
         {/* Row 1 */}
         <div className="bg-gradient-to-br from-secondary to-secondary/60 rounded-xl aspect-[3/4]" />
         <div className="bg-gradient-to-br from-muted to-muted/60 rounded-xl row-span-2" />
         <div className="bg-gradient-to-br from-secondary/80 to-secondary/40 rounded-xl aspect-[3/4]" />
         
         {/* Row 2 - Orange animated box */}
-        <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-500 rounded-xl aspect-[3/4] overflow-hidden animate-pulse-glow">
+        <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 rounded-xl aspect-[3/4] overflow-hidden shadow-lg shadow-orange-500/30">
           {/* Shimmer effect */}
           <div className="absolute inset-0 animate-shimmer-down">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-transparent" />
           </div>
           {/* Glow border */}
-          <div className="absolute inset-0 rounded-xl border-2 border-orange-300/50" />
+          <div className="absolute inset-0 rounded-xl border-2 border-orange-300/60" />
         </div>
         <div className="bg-gradient-to-br from-secondary/60 to-muted/60 rounded-xl aspect-[3/4]" />
         
         {/* Row 3 */}
         <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl aspect-[3/4]" />
         {/* Orange animated box - larger */}
-        <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 rounded-xl row-span-2 overflow-hidden animate-pulse-glow" style={{ animationDelay: '1s' }}>
+        <div className="relative bg-gradient-to-br from-amber-400 via-orange-500 to-orange-600 rounded-xl row-span-2 overflow-hidden shadow-lg shadow-orange-500/30">
           {/* Shimmer effect with delay */}
           <div className="absolute inset-0 animate-shimmer-down-delayed">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-transparent" />
           </div>
           {/* Glow border */}
-          <div className="absolute inset-0 rounded-xl border-2 border-amber-300/50" />
+          <div className="absolute inset-0 rounded-xl border-2 border-amber-300/60" />
         </div>
         <div className="bg-gradient-to-br from-secondary/70 to-secondary/30 rounded-xl aspect-[3/4]" />
         
