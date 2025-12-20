@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Package, ShoppingCart, Settings, LogOut, Image } from 'lucide-react';
+import { Package, ShoppingCart, Settings, LogOut, Image, Bell } from 'lucide-react';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
 import AdminSettings from '@/components/admin/AdminSettings';
 import AdminBanners from '@/components/admin/AdminBanners';
+import AdminNotifications from '@/components/admin/AdminNotifications';
 
 const AdminDashboard = () => {
   const { t, dir } = useLanguage();
@@ -51,6 +52,7 @@ const AdminDashboard = () => {
     { id: 'products', icon: Package, label: t('manageProducts') },
     { id: 'orders', icon: ShoppingCart, label: t('manageOrders') },
     { id: 'banners', icon: Image, label: 'الشريط الإعلاني' },
+    { id: 'notifications', icon: Bell, label: 'الإشعارات' },
     { id: 'settings', icon: Settings, label: t('manageSettings') },
   ];
 
@@ -92,6 +94,7 @@ const AdminDashboard = () => {
         {activeTab === 'products' && <AdminProducts />}
         {activeTab === 'orders' && <AdminOrders />}
         {activeTab === 'banners' && <AdminBanners />}
+        {activeTab === 'notifications' && <AdminNotifications />}
         {activeTab === 'settings' && <AdminSettings />}
       </main>
     </div>

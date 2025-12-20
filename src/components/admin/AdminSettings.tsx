@@ -30,6 +30,9 @@ const AdminSettings = () => {
   const [socialValues, setSocialValues] = useState<Record<string, string>>({});
   const [welcomeMode, setWelcomeMode] = useState('default');
   const [welcomeMedia, setWelcomeMedia] = useState('');
+  const [welcomeTitle, setWelcomeTitle] = useState('');
+  const [welcomeSubtitle, setWelcomeSubtitle] = useState('');
+  const [welcomeButtonText, setWelcomeButtonText] = useState('');
   const [isUploadingWelcome, setIsUploadingWelcome] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const welcomeInputRef = useRef<HTMLInputElement>(null);
@@ -45,12 +48,18 @@ const AdminSettings = () => {
       const appNameSetting = data?.find(s => s.key === 'app-name');
       const welcomeModeSetting = data?.find(s => s.key === 'welcome-mode');
       const welcomeMediaSetting = data?.find(s => s.key === 'welcome-media');
+      const welcomeTitleSetting = data?.find(s => s.key === 'welcome-title');
+      const welcomeSubtitleSetting = data?.find(s => s.key === 'welcome-subtitle');
+      const welcomeButtonTextSetting = data?.find(s => s.key === 'welcome-button-text');
       
       setCopyright(copyrightSetting?.value || 'app dv');
       setLogoUrl(logoSetting?.value || '');
       setAppName(appNameSetting?.value || 'BOUTIQUE MANCER');
       setWelcomeMode(welcomeModeSetting?.value || 'default');
       setWelcomeMedia(welcomeMediaSetting?.value || '');
+      setWelcomeTitle(welcomeTitleSetting?.value || '');
+      setWelcomeSubtitle(welcomeSubtitleSetting?.value || '');
+      setWelcomeButtonText(welcomeButtonTextSetting?.value || '');
       
       // Set social values
       const socialData: Record<string, string> = {};
@@ -293,7 +302,56 @@ const AdminSettings = () => {
                 <Trash2 className="h-4 w-4 mr-2" />
                 حذف
               </Button>
-            </div>
+      </div>
+
+      {/* Welcome Page Text Settings */}
+      <div className="bg-card rounded-xl p-6 shadow-card">
+        <h3 className="text-lg font-semibold mb-4">نصوص الواجهة الترحيبية</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              عنوان الترحيب (اختياري)
+            </label>
+            <Input 
+              value={welcomeTitle} 
+              onChange={(e) => setWelcomeTitle(e.target.value)} 
+              placeholder="مرحباً بك" 
+            />
+            <p className="text-xs text-muted-foreground mt-1">اتركه فارغاً لاستخدام النص الافتراضي</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              النص الفرعي (اختياري)
+            </label>
+            <Input 
+              value={welcomeSubtitle} 
+              onChange={(e) => setWelcomeSubtitle(e.target.value)} 
+              placeholder="اكتشف أحدث المنتجات" 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              نص زر البدء (اختياري)
+            </label>
+            <Input 
+              value={welcomeButtonText} 
+              onChange={(e) => setWelcomeButtonText(e.target.value)} 
+              placeholder="ابدأ الآن" 
+            />
+          </div>
+          <Button 
+            onClick={() => {
+              updateSettingMutation.mutate({ key: 'welcome-title', value: welcomeTitle });
+              updateSettingMutation.mutate({ key: 'welcome-subtitle', value: welcomeSubtitle });
+              updateSettingMutation.mutate({ key: 'welcome-button-text', value: welcomeButtonText });
+            }} 
+            disabled={updateSettingMutation.isPending} 
+            className="gradient-primary"
+          >
+            {updateSettingMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
+          </Button>
+        </div>
+      </div>
           </div>
         )}
       </div>

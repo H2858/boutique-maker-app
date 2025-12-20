@@ -1,6 +1,7 @@
 import { Search, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import NotificationsButton from "@/components/notifications/NotificationsButton";
 
 interface HeaderProps {
   onSearch?: (query: string) => void;
@@ -34,7 +35,7 @@ const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
           </span>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar (Desktop) */}
         <div className="flex-1 max-w-xl hidden md:block">
           <div className="relative">
             <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
@@ -56,6 +57,9 @@ const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
             )}
           </div>
         </div>
+
+        {/* Notifications Button */}
+        <NotificationsButton />
       </div>
 
       {/* Mobile Search */}

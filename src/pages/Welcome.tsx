@@ -1,23 +1,26 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
   const { appName, appLogo, isLoading: isAppSettingsLoading } = useAppSettings();
+  const [mediaLoaded, setMediaLoaded] = useState(false);
 
   // Fetch welcome background settings
-  const { data: welcomeSettings } = useQuery({
+  const { data: welcomeSettings, isLoading: isWelcomeLoading } = useQuery({
     queryKey: ['welcome-settings'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('settings')
         .select('key, value')
-        .in('key', ['welcome-mode', 'welcome-media']);
+        .in('key', ['welcome-mode', 'welcome-media', 'welcome-title', 'welcome-subtitle', 'welcome-button-text']);
       if (error) throw error;
       return data;
     },
@@ -26,6 +29,11 @@ const Welcome = () => {
 
   const welcomeMode = welcomeSettings?.find(s => s.key === 'welcome-mode')?.value || 'default';
   const welcomeMedia = welcomeSettings?.find(s => s.key === 'welcome-media')?.value || '';
+  const welcomeTitle = welcomeSettings?.find(s => s.key === 'welcome-title')?.value || '';
+  const welcomeSubtitle = welcomeSettings?.find(s => s.key === 'welcome-subtitle')?.value || '';
+  const welcomeButtonText = welcomeSettings?.find(s => s.key === 'welcome-button-text')?.value || '';
+
+  const isCustomMode = welcomeMode === 'custom' && welcomeMedia;
 
   const handleGetStarted = () => {
     localStorage.setItem('hasVisited', 'true');
@@ -51,13 +59,29 @@ const Welcome = () => {
 
   const isVideo = welcomeMedia && (welcomeMedia.endsWith('.mp4') || welcomeMedia.endsWith('.webm') || welcomeMedia.endsWith('.mov'));
 
+  // Show loading spinner while fetching settings for custom mode
+  if (isWelcomeLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div 
       className="min-h-screen flex flex-col bg-background relative overflow-hidden"
       dir={dir}
     >
+      {/* Loading overlay for custom media */}
+      {isCustomMode && !mediaLoaded && (
+        <div className="absolute inset-0 z-50 bg-background flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      )}
+
       {/* Background - Custom Media or Default Grid */}
-      {welcomeMode === 'custom' && welcomeMedia ? (
+      {isCustomMode ? (
         <div className="absolute inset-0">
           {isVideo ? (
             <video 
@@ -67,12 +91,14 @@ const Welcome = () => {
               loop
               muted
               playsInline
+              onLoadedData={() => setMediaLoaded(true)}
             />
           ) : (
             <img 
               src={welcomeMedia} 
               alt="Welcome Background"
               className="absolute inset-0 w-full h-full object-cover"
+              onLoad={() => setMediaLoaded(true)}
             />
           )}
           <div className="absolute inset-0 bg-black/40" />
@@ -124,14 +150,14 @@ const Welcome = () => {
         {/* Welcome Text */}
         <div className="text-center space-y-3 mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            {t('welcome')}
+            {welcomeTitle || t('welcome')}
           </h1>
           <h2 className="text-2xl font-black">
             <span className="text-primary">{firstName}</span>
             {restName && <span className="text-foreground"> {restName}</span>}
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-            {t('discoverProducts')}
+            {welcomeSubtitle || t('discoverProducts')}
           </p>
         </div>
 
@@ -141,7 +167,7 @@ const Welcome = () => {
           size="lg"
           className="w-full py-6 text-base font-bold rounded-full gradient-primary text-primary-foreground shadow-xl transition-all duration-300 active:scale-[0.98]"
         >
-          {t('getStarted')}
+          {welcomeButtonText || t('getStarted')}
         </Button>
         
         <p className="text-center text-[10px] text-muted-foreground mt-4">

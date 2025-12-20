@@ -120,10 +120,14 @@ const HeroBanner = () => {
                 <video 
                   ref={index === currentSlide ? videoRef : undefined}
                   src={banner.video_url} 
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className={`absolute inset-0 w-full h-full ${
+                    banner.media_position === 'top' ? 'object-top' : 
+                    banner.media_position === 'bottom' ? 'object-bottom' : 'object-center'
+                  } object-cover`}
                   muted={isMuted}
                   autoPlay
                   playsInline
+                  preload="auto"
                   onEnded={handleVideoEnded}
                   onPlay={handleVideoPlay}
                   onLoadedData={(e) => {
@@ -152,7 +156,11 @@ const HeroBanner = () => {
                 <img 
                   src={banner.image_url} 
                   alt={banner.title || ''} 
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className={`absolute inset-0 w-full h-full ${
+                    banner.media_position === 'top' ? 'object-top' : 
+                    banner.media_position === 'bottom' ? 'object-bottom' : 'object-center'
+                  } object-cover`}
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-black/30" />
                 {(banner.title || banner.subtitle) && (

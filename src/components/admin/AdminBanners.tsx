@@ -37,7 +37,14 @@ const AdminBanners = () => {
     sort_order: 0,
     image_url: '',
     video_url: '',
+    media_position: 'center',
   });
+
+  const POSITION_OPTIONS = [
+    { label: 'أعلى', value: 'top' },
+    { label: 'وسط', value: 'center' },
+    { label: 'أسفل', value: 'bottom' },
+  ];
 
   const { data: banners } = useQuery({
     queryKey: ['admin-banners'],
@@ -147,6 +154,7 @@ const AdminBanners = () => {
         sort_order: banner.sort_order,
         image_url: banner.image_url || '',
         video_url: banner.video_url || '',
+        media_position: banner.media_position || 'center',
       });
     } else {
       setEditingBanner(null);
@@ -158,6 +166,7 @@ const AdminBanners = () => {
         sort_order: banners?.length || 0,
         image_url: '',
         video_url: '',
+        media_position: 'center',
       });
     }
     setShowForm(true);
@@ -395,6 +404,29 @@ const AdminBanners = () => {
               />
               <span>نشط</span>
             </div>
+
+            {/* Media Position Selection */}
+            {(formData.image_url || formData.video_url) && (
+              <div>
+                <label className="block text-sm font-medium mb-2">موضع العرض</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {POSITION_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`py-2 px-4 rounded-lg border-2 transition-all ${
+                        formData.media_position === opt.value 
+                          ? 'border-primary bg-primary/10 text-primary' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setFormData({ ...formData, media_position: opt.value })}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-2">ترتيب العرض</label>
