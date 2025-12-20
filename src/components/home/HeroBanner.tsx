@@ -7,8 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 const HeroBanner = () => {
   const { dir } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   const { data: banners } = useQuery({
     queryKey: ['hero-banners'],
@@ -25,20 +27,41 @@ const HeroBanner = () => {
 
   // Fallback banners if database is empty
   const defaultBanners = [
-    { id: '1', title: "تخفيضات الموسم", subtitle: "خصم يصل إلى 70%", gradient: "from-primary via-primary-glow to-accent", image_url: null },
-    { id: '2', title: "وصل حديثاً", subtitle: "تشكيلة جديدة", gradient: "from-accent via-pink-500 to-primary", image_url: null },
-    { id: '3', title: "شحن مجاني", subtitle: "للطلبات الكبيرة", gradient: "from-success via-emerald-400 to-teal-500", image_url: null },
+    { id: '1', title: "تخفيضات الموسم", subtitle: "خصم يصل إلى 70%", gradient: "from-primary via-primary-glow to-accent", image_url: null, video_url: null },
+    { id: '2', title: "وصل حديثاً", subtitle: "تشكيلة جديدة", gradient: "from-accent via-pink-500 to-primary", image_url: null, video_url: null },
+    { id: '3', title: "شحن مجاني", subtitle: "للطلبات الكبيرة", gradient: "from-success via-emerald-400 to-teal-500", image_url: null, video_url: null },
   ];
 
   const displayBanners = banners && banners.length > 0 ? banners : defaultBanners;
+  const currentBanner = displayBanners[currentSlide];
 
+  // Auto-advance timer - only if not video or if we should advance
   useEffect(() => {
     if (displayBanners.length <= 1) return;
+    
+    // If current banner is a video, don't auto-advance (wait for video to end)
+    if (currentBanner?.video_url && isVideoPlaying) {
+      return;
+    }
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % displayBanners.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [displayBanners.length]);
+  }, [displayBanners.length, currentBanner?.video_url, isVideoPlaying]);
+
+  // Handle video end - advance to next slide
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (displayBanners.length > 1) {
+      setCurrentSlide((prev) => (prev + 1) % displayBanners.length);
+    }
+  };
+
+  // Handle video play
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+  };
 
   const handleTouchStart = (e: TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -74,7 +97,7 @@ const HeroBanner = () => {
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(${dir === 'rtl' ? currentSlide * 100 : -currentSlide * 100}%)` }}
       >
-        {displayBanners.map((banner: any) => (
+        {displayBanners.map((banner: any, index: number) => (
           <div
             key={banner.id}
             className={cn(
@@ -86,31 +109,39 @@ const HeroBanner = () => {
             {banner.video_url ? (
               <>
                 <video 
+                  ref={(el) => {
+                    if (el) videoRefs.current.set(banner.id, el);
+                  }}
                   src={banner.video_url} 
                   className="absolute inset-0 w-full h-full object-cover"
                   muted
-                  loop
-                  autoPlay
+                  autoPlay={index === currentSlide}
                   playsInline
+                  onEnded={handleVideoEnded}
+                  onPlay={handleVideoPlay}
                 />
                 <div className="absolute inset-0 bg-black/30" />
-                <div className="relative z-10 text-white text-center space-y-2">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>
-                  <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>
-                </div>
+                {(banner.title || banner.subtitle) && (
+                  <div className="relative z-10 text-white text-center space-y-2">
+                    {banner.title && <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>}
+                    {banner.subtitle && <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>}
+                  </div>
+                )}
               </>
             ) : banner.image_url ? (
               <>
                 <img 
                   src={banner.image_url} 
-                  alt={banner.title} 
+                  alt={banner.title || ''} 
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/30" />
-                <div className="relative z-10 text-white text-center space-y-2">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>
-                  <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>
-                </div>
+                {(banner.title || banner.subtitle) && (
+                  <div className="relative z-10 text-white text-center space-y-2">
+                    {banner.title && <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{banner.title}</h2>}
+                    {banner.subtitle && <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>}
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-primary-foreground text-center space-y-2">
@@ -122,18 +153,18 @@ const HeroBanner = () => {
         ))}
       </div>
 
-      {/* Dots */}
+      {/* Dots indicator */}
       {displayBanners.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-          {displayBanners.map((_, index) => (
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {displayBanners.map((_: any, index: number) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={cn(
-                "h-2 rounded-full transition-all duration-300",
+                "w-2 h-2 rounded-full transition-all duration-300",
                 currentSlide === index 
-                  ? "w-6 bg-primary-foreground" 
-                  : "w-2 bg-primary-foreground/50"
+                  ? "bg-white w-4" 
+                  : "bg-white/50"
               )}
             />
           ))}

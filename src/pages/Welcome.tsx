@@ -18,45 +18,51 @@ const Welcome = () => {
   const firstName = nameParts[0] || appName;
   const restName = nameParts.slice(1).join(' ');
 
+  // Generate grid items - all orange with shimmer
+  const gridItems = [
+    { delay: 0 },
+    { delay: 0.5 },
+    { delay: 1 },
+    { delay: 1.5 },
+    { delay: 0.3 },
+    { delay: 0.8 },
+    { delay: 1.3 },
+    { delay: 0.2 },
+    { delay: 0.7 },
+    { delay: 1.2 },
+    { delay: 0.4 },
+    { delay: 0.9 },
+  ];
+
   return (
     <div 
       className="min-h-screen flex flex-col bg-background relative overflow-hidden"
       dir={dir}
     >
-      {/* Background Grid with Animated Orange Elements */}
+      {/* Background Grid - All Orange with Shimmer Animation */}
       <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2">
-        {/* Row 1 */}
-        <div className="bg-gradient-to-br from-secondary to-secondary/60 rounded-xl aspect-[3/4]" />
-        <div className="bg-gradient-to-br from-muted to-muted/60 rounded-xl row-span-2" />
-        <div className="bg-gradient-to-br from-secondary/80 to-secondary/40 rounded-xl aspect-[3/4]" />
-        
-        {/* Row 2 - Orange animated box */}
-        <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 rounded-xl aspect-[3/4] overflow-hidden shadow-lg shadow-orange-500/30">
-          {/* Shimmer effect */}
-          <div className="absolute inset-0 animate-shimmer-down">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-transparent" />
+        {gridItems.map((item, index) => (
+          <div 
+            key={index}
+            className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 rounded-xl overflow-hidden shadow-lg shadow-orange-500/30"
+            style={{ animationDelay: `${item.delay}s` }}
+          >
+            {/* Shimmer effect */}
+            <div 
+              className="absolute inset-0 animate-shimmer-down"
+              style={{ animationDelay: `${item.delay}s` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-transparent" />
+            </div>
+            {/* Glow border */}
+            <div className="absolute inset-0 rounded-xl border-2 border-orange-300/60" />
+            {/* Pulse glow effect */}
+            <div 
+              className="absolute inset-0 animate-pulse-glow rounded-xl"
+              style={{ animationDelay: `${item.delay + 0.5}s` }}
+            />
           </div>
-          {/* Glow border */}
-          <div className="absolute inset-0 rounded-xl border-2 border-orange-300/60" />
-        </div>
-        <div className="bg-gradient-to-br from-secondary/60 to-muted/60 rounded-xl aspect-[3/4]" />
-        
-        {/* Row 3 */}
-        <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl aspect-[3/4]" />
-        {/* Orange animated box - larger */}
-        <div className="relative bg-gradient-to-br from-amber-400 via-orange-500 to-orange-600 rounded-xl row-span-2 overflow-hidden shadow-lg shadow-orange-500/30">
-          {/* Shimmer effect with delay */}
-          <div className="absolute inset-0 animate-shimmer-down-delayed">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-transparent" />
-          </div>
-          {/* Glow border */}
-          <div className="absolute inset-0 rounded-xl border-2 border-amber-300/60" />
-        </div>
-        <div className="bg-gradient-to-br from-secondary/70 to-secondary/30 rounded-xl aspect-[3/4]" />
-        
-        {/* Row 4 */}
-        <div className="bg-gradient-to-br from-muted/60 to-secondary/40 rounded-xl aspect-[3/4]" />
-        <div className="bg-gradient-to-br from-secondary/50 to-muted/50 rounded-xl aspect-[3/4]" />
+        ))}
       </div>
 
       {/* Logo at top center */}
