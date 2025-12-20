@@ -1,45 +1,56 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import logo from '@/assets/logo.png';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
+  const { appName, appLogo } = useAppSettings();
 
   const handleGetStarted = () => {
     localStorage.setItem('hasVisited', 'true');
     navigate('/home');
   };
 
+  // Split app name for styling
+  const nameParts = appName.split(' ');
+  const firstName = nameParts[0] || appName;
+  const restName = nameParts.slice(1).join(' ');
+
   return (
     <div 
       className="min-h-screen flex flex-col bg-background relative overflow-hidden"
       dir={dir}
     >
-      {/* Background Grid with Animated Elements */}
+      {/* Background Grid with Animated Orange Elements */}
       <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2 opacity-80">
         {/* Row 1 */}
         <div className="bg-gradient-to-br from-secondary to-secondary/60 rounded-xl aspect-[3/4]" />
         <div className="bg-gradient-to-br from-muted to-muted/60 rounded-xl row-span-2" />
         <div className="bg-gradient-to-br from-secondary/80 to-secondary/40 rounded-xl aspect-[3/4]" />
         
-        {/* Row 2 */}
-        <div className="relative bg-gradient-to-br from-primary to-accent rounded-xl aspect-[3/4] overflow-hidden">
-          {/* Animated shimmer overlay */}
+        {/* Row 2 - Orange animated box */}
+        <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-amber-500 rounded-xl aspect-[3/4] overflow-hidden animate-pulse-glow">
+          {/* Shimmer effect */}
           <div className="absolute inset-0 animate-shimmer-down">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/30 to-transparent" />
           </div>
+          {/* Glow border */}
+          <div className="absolute inset-0 rounded-xl border-2 border-orange-300/50" />
         </div>
         <div className="bg-gradient-to-br from-secondary/60 to-muted/60 rounded-xl aspect-[3/4]" />
         
         {/* Row 3 */}
         <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl aspect-[3/4]" />
-        <div className="relative bg-gradient-to-br from-accent to-primary rounded-xl row-span-2 overflow-hidden">
-          {/* Animated shimmer overlay with delay */}
+        {/* Orange animated box - larger */}
+        <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 rounded-xl row-span-2 overflow-hidden animate-pulse-glow" style={{ animationDelay: '1s' }}>
+          {/* Shimmer effect with delay */}
           <div className="absolute inset-0 animate-shimmer-down-delayed">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/30 to-transparent" />
           </div>
+          {/* Glow border */}
+          <div className="absolute inset-0 rounded-xl border-2 border-amber-300/50" />
         </div>
         <div className="bg-gradient-to-br from-secondary/70 to-secondary/30 rounded-xl aspect-[3/4]" />
         
@@ -51,8 +62,8 @@ const Welcome = () => {
       {/* Logo at top center */}
       <div className="relative z-10 pt-10 flex justify-center">
         <div className="bg-background/90 backdrop-blur-md px-5 py-3 rounded-full flex items-center gap-3 shadow-xl border border-border/30">
-          <img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
-          <span className="font-bold text-foreground text-base">BOUTIQUE MANCER</span>
+          <img src={appLogo} alt="Logo" className="w-10 h-10 object-contain" />
+          <span className="font-bold text-foreground text-base">{appName}</span>
         </div>
       </div>
 
@@ -67,8 +78,8 @@ const Welcome = () => {
             {t('welcome')}
           </h1>
           <h2 className="text-2xl font-black">
-            <span className="text-primary">BOUTIQUE</span>
-            <span className="text-foreground"> MANCER</span>
+            <span className="text-primary">{firstName}</span>
+            {restName && <span className="text-foreground"> {restName}</span>}
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
             {t('discoverProducts')}

@@ -24,15 +24,16 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe animate-slide-in-bottom">
       {/* Background with curved notch */}
       <div className="relative">
-        {/* SVG curved background */}
+        {/* SVG curved background with rounded corners */}
         <svg
           className="absolute bottom-0 left-0 right-0 w-full"
-          height="85"
-          viewBox="0 0 500 85"
+          height="95"
+          viewBox="0 0 500 95"
           preserveAspectRatio="none"
         >
+          {/* Main rounded bar with notch */}
           <path
-            d="M0,25 L190,25 Q210,25 220,5 Q230,-10 250,0 Q270,-10 280,5 Q290,25 310,25 L500,25 L500,85 L0,85 Z"
+            d="M20,25 L190,25 Q210,25 220,5 Q230,-10 250,0 Q270,-10 280,5 Q290,25 310,25 L480,25 Q500,25 500,45 L500,75 Q500,95 480,95 L20,95 Q0,95 0,75 L0,45 Q0,25 20,25 Z"
             className="fill-card"
           />
         </svg>
@@ -63,7 +64,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
         </div>
 
         {/* Navigation items */}
-        <div className="relative flex items-end justify-around h-[70px] px-2 pt-3">
+        <div className="relative flex items-end justify-around h-[80px] px-4 pt-3">
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;

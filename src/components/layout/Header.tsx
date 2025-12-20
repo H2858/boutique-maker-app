@@ -1,8 +1,6 @@
 import { Search, X } from "lucide-react";
-import defaultLogo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 interface HeaderProps {
   onSearch?: (query: string) => void;
@@ -11,19 +9,7 @@ interface HeaderProps {
 
 const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
   const { t, dir } = useLanguage();
-
-  const { data: logoSetting } = useQuery({
-    queryKey: ['app-logo-setting'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'app-logo')
-        .maybeSingle();
-      if (error) throw error;
-      return data?.value || '';
-    },
-  });
+  const { appName, appLogo } = useAppSettings();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearch?.(e.target.value);
@@ -39,12 +25,12 @@ const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img 
-            src={logoSetting || defaultLogo} 
-            alt="Boutique Mancer" 
+            src={appLogo} 
+            alt={appName} 
             className="h-10 w-auto object-contain" 
           />
           <span className="hidden sm:block text-lg font-bold text-gradient">
-            BOUTIQUE MANCER
+            {appName}
           </span>
         </div>
 

@@ -23,6 +23,7 @@ const AdminSettings = () => {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [copyright, setCopyright] = useState('');
+  const [appName, setAppName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [showDeleteLogo, setShowDeleteLogo] = useState(false);
@@ -37,8 +38,10 @@ const AdminSettings = () => {
       
       const copyrightSetting = data?.find(s => s.key === 'copyright');
       const logoSetting = data?.find(s => s.key === 'app-logo');
+      const appNameSetting = data?.find(s => s.key === 'app-name');
       setCopyright(copyrightSetting?.value || 'app dv');
       setLogoUrl(logoSetting?.value || '');
+      setAppName(appNameSetting?.value || 'BOUTIQUE MANCER');
       
       // Set social values
       const socialData: Record<string, string> = {};
@@ -78,6 +81,7 @@ const AdminSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['all-settings'] });
       queryClient.invalidateQueries({ queryKey: ['copyright-setting'] });
       queryClient.invalidateQueries({ queryKey: ['app-logo-setting'] });
+      queryClient.invalidateQueries({ queryKey: ['app-name-setting'] });
       toast.success(t('save'));
     },
     onError: (error) => {
@@ -125,6 +129,10 @@ const AdminSettings = () => {
     updateSettingMutation.mutate({ key: 'copyright', value: copyright });
   };
 
+  const handleSaveAppName = () => {
+    updateSettingMutation.mutate({ key: 'app-name', value: appName });
+  };
+
   const handleSaveSocialLink = (key: string) => {
     updateSettingMutation.mutate({ key, value: socialValues[key] || '' });
   };
@@ -167,6 +175,15 @@ const AdminSettings = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* App Name Settings */}
+      <div className="bg-card rounded-xl p-6 shadow-card">
+        <label className="block text-sm font-medium text-foreground mb-2">اسم التطبيق</label>
+        <Input value={appName} onChange={(e) => setAppName(e.target.value)} placeholder="BOUTIQUE MANCER" className="mb-4" />
+        <Button onClick={handleSaveAppName} disabled={updateSettingMutation.isPending} className="gradient-primary">
+          {updateSettingMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t('save')}
+        </Button>
       </div>
 
       {/* Copyright Settings */}
