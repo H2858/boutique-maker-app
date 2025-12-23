@@ -59,10 +59,10 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen min-h-[100dvh] bg-background pb-20" dir={dir}>
+    <div className="flex flex-col min-h-screen min-h-[100dvh] bg-background" dir={dir}>
       <Header onSearch={handleSearch} searchQuery={searchQuery} />
       
-      <main className="flex-1 animate-fade-in">
+      <main className="flex-1 pb-24 animate-fade-in">
         {renderContent()}
       </main>
 
