@@ -239,6 +239,15 @@
   }
 }
 
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 @keyframes shimmer-down {
   0% {
     transform: translateY(-100%);
@@ -253,6 +262,60 @@
   100% {
     transform: translateY(200%);
     opacity: 0;
+  }
+}
+
+@keyframes shimmer-horizontal {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes notification-flash {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-down-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -272,6 +335,10 @@
   animation: bounce-subtle 0.6s ease-in-out;
 }
 
+.animate-bounce-gentle {
+  animation: bounce-gentle 1s ease-in-out infinite;
+}
+
 .animate-shimmer-down {
   animation: shimmer-down 3s ease-in-out infinite;
 }
@@ -279,6 +346,22 @@
 .animate-shimmer-down-delayed {
   animation: shimmer-down 3s ease-in-out infinite;
   animation-delay: 1.5s;
+}
+
+.animate-shimmer-horizontal {
+  animation: shimmer-horizontal 1.5s ease-in-out infinite;
+}
+
+.animate-notification-flash {
+  animation: notification-flash 2s ease-out forwards;
+}
+
+.animate-slide-down-fade {
+  animation: slide-down-fade 2s ease-out forwards;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.4s ease-out forwards;
 }
 
 /* Hide lovable badge */
