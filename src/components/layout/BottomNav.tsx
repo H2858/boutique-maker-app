@@ -21,7 +21,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const centerIndex = 2;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe animate-slide-in-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 animate-slide-in-bottom" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}>
       {/* Background with curved notch */}
       <div className="relative">
         {/* SVG curved background with rounded corners */}
