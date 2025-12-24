@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import GlobalNotificationFlash from "@/components/notifications/GlobalNotificationFlash";
 import Welcome from "./pages/Welcome";
 import Home from "./pages/Home";
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -23,6 +24,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <GlobalNotificationFlash />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={hasVisited ? <Navigate to="/home" /> : <Welcome />} />

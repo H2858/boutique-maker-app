@@ -319,6 +319,87 @@
   }
 }
 
+@keyframes notification-sweep {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  10% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@keyframes notification-toast {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
+  }
+}
+
+@keyframes pulse-fast {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
+
+@keyframes shimmer-fast {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
 }
@@ -362,6 +443,30 @@
 
 .animate-slide-in-bottom {
   animation: slide-in-bottom 0.4s ease-out forwards;
+}
+
+.animate-notification-sweep {
+  animation: notification-sweep 1.5s ease-out forwards;
+}
+
+.animate-notification-toast {
+  animation: notification-toast 4s ease-out forwards;
+}
+
+.animate-pulse-fast {
+  animation: pulse-fast 0.8s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 1s ease-in-out infinite;
+}
+
+.animate-float-up {
+  animation: float-up 3s ease-out forwards;
+}
+
+.animate-shimmer-fast {
+  animation: shimmer-fast 1s ease-in-out infinite;
 }
 
 /* Hide lovable badge */
