@@ -181,9 +181,9 @@ const AdminBanners = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('حجم الفيديو كبير جداً (الحد الأقصى 50MB)');
+    // Check file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('حجم الفيديو كبير جداً (الحد الأقصى 100MB)');
       return;
     }
 
@@ -374,7 +374,7 @@ const AdminBanners = () => {
                   {isUploadingVideo ? 'جاري الرفع...' : 'رفع فيديو'}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">الحد الأقصى لحجم الفيديو: 50MB</p>
+              <p className="text-xs text-muted-foreground mt-1">الحد الأقصى لحجم الفيديو: 100MB</p>
             </div>
 
             {/* Gradient selection (only if no image/video) */}

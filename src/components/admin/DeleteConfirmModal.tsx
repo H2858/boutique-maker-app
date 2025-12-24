@@ -8,9 +8,11 @@ interface DeleteConfirmModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isLoading?: boolean;
+  title?: string;
+  description?: string;
 }
 
-const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isLoading }: DeleteConfirmModalProps) => {
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isLoading, title, description }: DeleteConfirmModalProps) => {
   const { t, dir } = useLanguage();
 
   return (
@@ -19,11 +21,11 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isLoading }: DeleteCon
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            {t('delete')}
+            {title || t('delete')}
           </DialogTitle>
         </DialogHeader>
         
-        <p className="text-muted-foreground py-4">{t('confirmDelete')}</p>
+        <p className="text-muted-foreground py-4">{description || t('confirmDelete')}</p>
         
         <div className="flex gap-3">
           <Button variant="outline" onClick={onClose} className="flex-1">

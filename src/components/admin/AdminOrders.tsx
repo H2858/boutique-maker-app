@@ -13,6 +13,7 @@ const AdminOrders = () => {
   const queryClient = useQueryClient();
   const [deletingOrder, setDeletingOrder] = useState<any>(null);
   const [viewingProduct, setViewingProduct] = useState<any>(null);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
@@ -39,13 +40,39 @@ const AdminOrders = () => {
     onError: () => toast.error(t('error')),
   });
 
+  const deleteAllMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('تم حذف جميع الطلبات');
+      setShowDeleteAllModal(false);
+    },
+    onError: () => toast.error(t('error')),
+  });
+
   if (isLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">{t('orders')}</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">{t('orders')}</h2>
+        {orders && orders.length > 0 && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={() => setShowDeleteAllModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            حذف الكل
+          </Button>
+        )}
+      </div>
       
       <div className="space-y-4">
         {orders?.map((order) => (
@@ -99,6 +126,15 @@ const AdminOrders = () => {
         onClose={() => setDeletingOrder(null)}
         onConfirm={() => deleteMutation.mutate(deletingOrder?.id)}
         isLoading={deleteMutation.isPending}
+      />
+
+      <DeleteConfirmModal
+        isOpen={showDeleteAllModal}
+        onClose={() => setShowDeleteAllModal(false)}
+        onConfirm={() => deleteAllMutation.mutate()}
+        isLoading={deleteAllMutation.isPending}
+        title="حذف جميع الطلبات"
+        description="هل أنت متأكد من حذف جميع الطلبات؟ لا يمكن التراجع عن هذا الإجراء."
       />
 
       <ProductDetailsModal

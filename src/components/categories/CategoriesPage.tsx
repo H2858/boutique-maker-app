@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/product/ProductCard';
 import ProductDetailsModal from '@/components/product/ProductDetailsModal';
-import { Loader2, User, Users, Baby, Watch, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { Loader2, User, Users, Baby, Watch, ArrowRight, ArrowLeft, Sparkles, Grid3X3, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CategoriesPage = () => {
@@ -17,33 +17,37 @@ const CategoriesPage = () => {
       id: 'men', 
       icon: User, 
       label: t('categoryMen'),
-      gradient: 'from-blue-500 via-blue-600 to-indigo-700',
-      iconBg: 'bg-white/20',
-      pattern: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%)'
+      color: 'from-blue-500 to-blue-700',
+      bgColor: 'bg-blue-500/10',
+      iconColor: 'text-blue-500',
+      borderColor: 'border-blue-500/20'
     },
     { 
       id: 'women', 
       icon: Users, 
       label: t('categoryWomen'),
-      gradient: 'from-pink-500 via-rose-500 to-fuchsia-600',
-      iconBg: 'bg-white/20',
-      pattern: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%)'
+      color: 'from-pink-500 to-rose-600',
+      bgColor: 'bg-pink-500/10',
+      iconColor: 'text-pink-500',
+      borderColor: 'border-pink-500/20'
     },
     { 
       id: 'kids', 
       icon: Baby, 
       label: t('categoryKids'),
-      gradient: 'from-cyan-400 via-teal-500 to-emerald-600',
-      iconBg: 'bg-white/20',
-      pattern: 'radial-gradient(circle at 80% 80%, rgba(255,255,255,0.15) 0%, transparent 50%)'
+      color: 'from-emerald-500 to-teal-600',
+      bgColor: 'bg-emerald-500/10',
+      iconColor: 'text-emerald-500',
+      borderColor: 'border-emerald-500/20'
     },
     { 
       id: 'accessories', 
       icon: Watch, 
       label: t('categoryAccessories'),
-      gradient: 'from-amber-400 via-orange-500 to-red-500',
-      iconBg: 'bg-white/20',
-      pattern: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15) 0%, transparent 50%)'
+      color: 'from-amber-500 to-orange-600',
+      bgColor: 'bg-amber-500/10',
+      iconColor: 'text-amber-500',
+      borderColor: 'border-amber-500/20'
     },
   ];
 
@@ -83,15 +87,16 @@ const CategoriesPage = () => {
         {/* Category header */}
         <div className={cn(
           "relative overflow-hidden rounded-2xl p-6 mb-6 bg-gradient-to-br",
-          currentCat?.gradient
+          currentCat?.color
         )}>
-          <div 
-            className="absolute inset-0 opacity-50"
-            style={{ background: currentCat?.pattern }}
-          />
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0" style={{ 
+              background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2) 0%, transparent 50%)'
+            }} />
+          </div>
           <div className="relative flex items-center gap-4">
             {currentCat && (
-              <div className={cn("p-4 rounded-2xl", currentCat.iconBg)}>
+              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
                 <currentCat.icon className="h-8 w-8 text-white" />
               </div>
             )}
@@ -142,12 +147,12 @@ const CategoriesPage = () => {
 
   return (
     <div className="px-4 py-6" dir={dir}>
-      {/* Header */}
+      {/* Modern Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="relative">
           <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-xl" />
           <div className="relative p-3 rounded-2xl gradient-primary">
-            <Sparkles className="h-6 w-6 text-white" />
+            <Grid3X3 className="h-6 w-6 text-white" />
           </div>
         </div>
         <div>
@@ -156,8 +161,8 @@ const CategoriesPage = () => {
         </div>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Modern Categories List */}
+      <div className="space-y-3">
         {categoryConfig.map((category, index) => {
           const Icon = category.icon;
           return (
@@ -165,37 +170,45 @@ const CategoriesPage = () => {
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
               className={cn(
-                "relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br text-white",
-                "transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl",
-                "animate-fade-in-up active:scale-95",
-                "min-h-[140px] flex flex-col justify-between",
-                category.gradient
+                "w-full relative overflow-hidden rounded-2xl p-4",
+                "bg-card border transition-all duration-300",
+                "hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]",
+                "animate-fade-in-up flex items-center gap-4",
+                category.borderColor
               )}
-              style={{ animationDelay: `${index * 100}ms` }}
+              style={{ animationDelay: `${index * 80}ms` }}
             >
-              {/* Pattern overlay */}
-              <div 
-                className="absolute inset-0 opacity-40"
-                style={{ background: category.pattern }}
-              />
-              
-              {/* Icon */}
-              <div className={cn("relative p-3 rounded-2xl w-fit", category.iconBg)}>
-                <Icon className="h-7 w-7" />
+              {/* Icon Container */}
+              <div className={cn(
+                "relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center",
+                category.bgColor
+              )}>
+                <Icon className={cn("h-7 w-7", category.iconColor)} />
               </div>
               
-              {/* Label */}
-              <div className="relative mt-auto">
-                <h3 className="text-lg font-bold mb-1">{category.label}</h3>
-                <div className="flex items-center gap-1 text-sm text-white/80">
-                  <span>{t('viewAll')}</span>
-                  <ArrowIcon className="h-4 w-4" />
-                </div>
+              {/* Text Content */}
+              <div className="flex-1 text-start">
+                <h3 className="text-lg font-bold text-foreground">{category.label}</h3>
+                <p className="text-sm text-muted-foreground">{t('viewAll')}</p>
               </div>
               
-              {/* Decorative elements */}
-              <div className="absolute -bottom-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
-              <div className="absolute -top-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
+              {/* Arrow */}
+              <div className={cn(
+                "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center",
+                "bg-secondary/50"
+              )}>
+                <ChevronRight className={cn(
+                  "h-5 w-5 text-muted-foreground transition-transform",
+                  dir === 'rtl' && "rotate-180"
+                )} />
+              </div>
+
+              {/* Gradient line on the side */}
+              <div className={cn(
+                "absolute top-2 bottom-2 w-1 rounded-full bg-gradient-to-b",
+                category.color,
+                dir === 'rtl' ? 'right-0' : 'left-0'
+              )} />
             </button>
           );
         })}

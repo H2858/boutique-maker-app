@@ -37,8 +37,8 @@ const OffersPage = () => {
 
   return (
     <div className="px-4 py-6" dir={dir}>
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl mb-6 bg-gradient-to-br from-primary via-accent to-pink-600 p-6">
+      {/* Header Banner - Modern Design */}
+      <div className="relative overflow-hidden rounded-3xl mb-6 bg-gradient-to-br from-primary via-accent to-pink-600 p-6 min-h-[140px]">
         {/* Animated background pattern */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute inset-0" style={{ 
@@ -57,25 +57,27 @@ const OffersPage = () => {
           <Flame className="h-5 w-5 text-white/30" />
         </div>
         
-        <div className="relative flex items-center gap-4">
+        {/* Main content - centered */}
+        <div className="relative flex items-center justify-center gap-4 pt-8">
           <div className="relative">
             <div className="absolute inset-0 bg-white/30 rounded-2xl blur-lg animate-pulse" />
             <div className="relative p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
               <Percent className="h-8 w-8 text-white" />
             </div>
           </div>
-          <div>
+          <div className="text-center">
             <h1 className="text-2xl font-bold text-white">{t('offers')}</h1>
             <p className="text-white/80 text-sm mt-1">{t('specialOffersDescription')}</p>
           </div>
         </div>
         
-        {/* Offer count badge */}
-        {specialOffers && specialOffers.length > 0 && (
-          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-            <span className="text-white font-bold text-sm">{specialOffers.length} {t('offers')}</span>
-          </div>
-        )}
+      {/* Offer count badge - positioned properly */}
+      {specialOffers && specialOffers.length > 0 && (
+        <div className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/25 backdrop-blur-md border border-white/30">
+          <span className="text-white font-bold text-lg">{specialOffers.length}</span>
+          <span className="text-white/90 text-sm">{t('offers')}</span>
+        </div>
+      )}
         
         {/* Decorative elements */}
         <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
